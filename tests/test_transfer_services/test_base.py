@@ -76,7 +76,4 @@ def test_add_unsupported_vertical_new_scope_required(monkeypatch, mock_vertical,
     )
     assert not transfer_service.access_token
     assert transfer_service.scope == {'fake', 'scope', 'new_scope'}
-    assert transfer_service.verticals == {
-        Vertical.FAKE_VERTICAL,
-        Vertical.NEW_VERTICAL_EXTRA_SCOPE,
-    }
+    assert transfer_service.verticals == {Vertical.FAKE_VERTICAL, Vertical.NEW_VERTICAL_EXTRA_SCOPE}

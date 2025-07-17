@@ -1,30 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from oauthlib.oauth2 import (
-    BackendApplicationClient,
-)
+from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
 from pardner.verticals.base import Vertical
 
 
 class InsufficientScopeException(Exception):
-    def __init__(
-        self,
-        unsupported_verticals: Iterable[Vertical],
-        service_name: str,
-    ):
+    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str):
         combined_verticals = ' '.join(unsupported_verticals)
         super().__init__(f'Cannot add {combined_verticals} to {service_name} with current scope.')
 
 
 class UnsupportedVerticalException(Exception):
-    def __init__(
-        self,
-        unsupported_verticals: Iterable[Vertical],
-        service_name: str,
-    ):
+    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str):
         combined_verticals = ' '.join(unsupported_verticals)
         super().__init__(
             f'Cannot add {combined_verticals} to {service_name} because they are not supported.'
@@ -46,18 +36,11 @@ class BaseTransferService(OAuth2Session, ABC):
     _scope: set[str] = None
     _service_name: str = None
 
-    def __init__(
-        self,
-        client_id: str,
-        client_secret: str,
-        redirect_uri: str,
-    ):
+    def __init__(self, client_id: str, client_secret: str, redirect_uri: str):
         self._client_secret = client_secret
         background_application_client = BackendApplicationClient(client_id)
         super().__init__(
-            client_id=client_id,
-            client=background_application_client,
-            redirect_uri=redirect_uri,
+            client_id=client_id, client=background_application_client, redirect_uri=redirect_uri
         )
 
     @property
@@ -81,11 +64,7 @@ class BaseTransferService(OAuth2Session, ABC):
             raise UnsupportedVerticalException(unsupported_verticals, self.name)
         self._verticals = set(verticals)
 
-    def add_verticals(
-        self,
-        verticals: Iterable[Vertical],
-        should_reauth: bool = False,
-    ) -> bool:
+    def add_verticals(self, verticals: Iterable[Vertical], should_reauth: bool = False) -> bool:
         """
         Adds to the verticals being requested.
 
