@@ -8,13 +8,13 @@ from pardner.verticals.base import Vertical
 
 
 class InsufficientScopeException(Exception):
-    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str):
+    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str) -> None:
         combined_verticals = ' '.join(unsupported_verticals)
         super().__init__(f'Cannot add {combined_verticals} to {service_name} with current scope.')
 
 
 class UnsupportedVerticalException(Exception):
-    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str):
+    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str) -> None:
         combined_verticals = ' '.join(unsupported_verticals)
         super().__init__(
             f'Cannot add {combined_verticals} to {service_name} because they are not supported.'
@@ -34,18 +34,20 @@ class BaseTransferService(OAuth2Session, ABC):
     _supported_verticals: set[Vertical] = set()
     _verticals: set[Vertical] = set()
     _scope: set[str] = set()
-    _service_name: str | None = None
+    _service_name: str
 
-    def __init__(self, client_id: str, client_secret: str, redirect_uri: str):
+    def __init__(
+        self, service_name: str, client_id: str, client_secret: str, redirect_uri: str
+    ) -> None:
         background_application_client = BackendApplicationClient(client_id)
         super().__init__(
             client_id=client_id, client=background_application_client, redirect_uri=redirect_uri
         )
-
         self._client_secret = client_secret
+        self._service_name = service_name
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self._service_name
 
     @property
@@ -53,7 +55,7 @@ class BaseTransferService(OAuth2Session, ABC):
         return self._verticals
 
     @verticals.setter
-    def verticals(self, verticals: Iterable[Vertical]):
+    def verticals(self, verticals: Iterable[Vertical]) -> None:
         """
         :raises: :class:`UnsupportedVerticalException`: if one or more of the
         `verticals` are not supported by the service.
@@ -81,7 +83,7 @@ class BaseTransferService(OAuth2Session, ABC):
         """
         new_verticals = set(verticals) - self.verticals
         new_scopes = self.scope_for_verticals(new_verticals)
-        original_scopes: set = self.scope if self.scope else set()
+        original_scopes: set[str] = self.scope if self.scope else set()
 
         if not new_scopes.issubset(original_scopes) and not should_reauth:
             raise InsufficientScopeException(verticals, self.name)
