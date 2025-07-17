@@ -31,20 +31,21 @@ class BaseTransferService(OAuth2Session, ABC):
     :param redirect_url: the registered callback URI.
     """
 
-    _supported_verticals: set[Vertical]
-    _verticals: set[Vertical] = None
-    _scope: set[str] = None
-    _service_name: str = None
+    _supported_verticals: set[Vertical] = set()
+    _verticals: set[Vertical] = set()
+    _scope: set[str] = set()
+    _service_name: str | None = None
 
     def __init__(self, client_id: str, client_secret: str, redirect_uri: str):
-        self._client_secret = client_secret
         background_application_client = BackendApplicationClient(client_id)
         super().__init__(
             client_id=client_id, client=background_application_client, redirect_uri=redirect_uri
         )
 
+        self._client_secret = client_secret
+
     @property
-    def name(self) -> str:
+    def name(self):
         return self._service_name
 
     @property
@@ -80,10 +81,10 @@ class BaseTransferService(OAuth2Session, ABC):
         """
         new_verticals = set(verticals) - self.verticals
         new_scopes = self.scope_for_verticals(new_verticals)
-        original_scopes = self.scope if self.scope else {}
+        original_scopes: set = self.scope if self.scope else set()
 
         if not new_scopes.issubset(original_scopes) and not should_reauth:
-            raise InsufficientScopeException(new_scopes, self.name)
+            raise InsufficientScopeException(verticals, self.name)
         elif not new_scopes.issubset(original_scopes):
             self.verticals = new_verticals | self.verticals
             del self.access_token

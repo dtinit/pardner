@@ -1,11 +1,11 @@
 import pytest
 
-from pardner.transfer_services.base import (
+from pardner.services import (
     BaseTransferService,
     InsufficientScopeException,
     UnsupportedVerticalException,
 )
-from pardner.verticals.base import Vertical
+from pardner.verticals import Vertical
 
 sample_scope = {'fake', 'scope'}
 
