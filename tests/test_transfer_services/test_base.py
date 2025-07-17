@@ -12,10 +12,9 @@ sample_scope = {'fake', 'scope'}
 
 class FakeTransferService(BaseTransferService):
     def __init__(self, supported_verticals, verticals):
-        super().__init__('', '', '')
+        super().__init__('Fake Transfer Service', '', '', '', set())
         self._supported_verticals = set(supported_verticals)
         self._verticals = set(verticals)
-        self._service_name = 'Fake Transfer Service'
 
     def scope_for_verticals(self, verticals):
         return sample_scope

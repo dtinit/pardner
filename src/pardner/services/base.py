@@ -31,20 +31,29 @@ class BaseTransferService(OAuth2Session, ABC):
     :param redirect_url: The registered callback URI.
     """
 
-    _supported_verticals: set[Vertical] = set()
-    _verticals: set[Vertical] = set()
+    _client_secret: str
     _scope: set[str] = set()
     _service_name: str
+    _supported_verticals: set[Vertical] = set()
+    _verticals: set[Vertical] = set()
 
     def __init__(
-        self, service_name: str, client_id: str, client_secret: str, redirect_uri: str
+        self,
+        service_name: str,
+        client_id: str,
+        client_secret: str,
+        redirect_uri: str,
+        supported_verticals: set[Vertical],
+        verticals: set[Vertical] = set(),
     ) -> None:
         background_application_client = BackendApplicationClient(client_id)
         super().__init__(
             client_id=client_id, client=background_application_client, redirect_uri=redirect_uri
         )
         self._client_secret = client_secret
+        self._supported_verticals = supported_verticals
         self._service_name = service_name
+        self._verticals = verticals
 
     @property
     def name(self) -> str:
