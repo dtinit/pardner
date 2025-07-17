@@ -28,7 +28,7 @@ class BaseTransferService(OAuth2Session, ABC):
 
     :param client_id: Client identifier given by the OAuth provider upon registration.
     :param client_secret: The `client_secret` paired to the `client_id`.
-    :param redirect_url: the registered callback URI.
+    :param redirect_url: The registered callback URI.
     """
 
     _supported_verticals: set[Vertical] = set()
@@ -70,10 +70,10 @@ class BaseTransferService(OAuth2Session, ABC):
         Adds to the verticals being requested.
 
         :param verticals: `Vertical`s that should be added to service.
-        :param should_reauth: whether or not the service should unauthorize itself to
+        :param should_reauth: Whether or not the service should unauthorize itself to
         start a new session with added scopes corresponding to `verticals`.
 
-        :returns: whether add was successful without reauthorization (`True`) or not
+        :returns: Whether add was successful without reauthorization (`True`) or not
         (`False`).
 
         :raises: :class:`UnsupportedVerticalException`: if `should_reauth` is not
@@ -100,8 +100,8 @@ class BaseTransferService(OAuth2Session, ABC):
         Given a vertical, returns the scopes necessary for making API requests for
         fetching data in that vertical.
 
-        :param verticals: the verticals for which scopes are being requested.
+        :param verticals: The verticals for which scopes are being requested.
 
-        :returns: scope names corresponding to `verticals`.
+        :returns: Scope names corresponding to `verticals`.
         """
         pass
