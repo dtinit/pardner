@@ -8,13 +8,19 @@ from pardner.verticals.base import Vertical
 
 
 class InsufficientScopeException(Exception):
-    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str) -> None:
+    def __init__(
+        self, unsupported_verticals: Iterable[Vertical], service_name: str
+    ) -> None:
         combined_verticals = ' '.join(unsupported_verticals)
-        super().__init__(f'Cannot add {combined_verticals} to {service_name} with current scope.')
+        super().__init__(
+            f'Cannot add {combined_verticals} to {service_name} with current scope.'
+        )
 
 
 class UnsupportedVerticalException(Exception):
-    def __init__(self, unsupported_verticals: Iterable[Vertical], service_name: str) -> None:
+    def __init__(
+        self, unsupported_verticals: Iterable[Vertical], service_name: str
+    ) -> None:
         combined_verticals = ' '.join(unsupported_verticals)
         super().__init__(
             f'Cannot add {combined_verticals} to {service_name} because they are not supported.'
@@ -48,7 +54,9 @@ class BaseTransferService(OAuth2Session, ABC):
     ) -> None:
         background_application_client = BackendApplicationClient(client_id)
         super().__init__(
-            client_id=client_id, client=background_application_client, redirect_uri=redirect_uri
+            client_id=client_id,
+            client=background_application_client,
+            redirect_uri=redirect_uri,
         )
         self._client_secret = client_secret
         self._supported_verticals = supported_verticals
@@ -70,13 +78,17 @@ class BaseTransferService(OAuth2Session, ABC):
         `verticals` are not supported by the service.
         """
         unsupported_verticals = [
-            vertical for vertical in verticals if vertical not in self._supported_verticals
+            vertical
+            for vertical in verticals
+            if vertical not in self._supported_verticals
         ]
         if len(unsupported_verticals) > 0:
             raise UnsupportedVerticalException(unsupported_verticals, self.name)
         self._verticals = set(verticals)
 
-    def add_verticals(self, verticals: Iterable[Vertical], should_reauth: bool = False) -> bool:
+    def add_verticals(
+        self, verticals: Iterable[Vertical], should_reauth: bool = False
+    ) -> bool:
         """
         Adds to the verticals being requested.
 

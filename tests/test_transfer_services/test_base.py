@@ -45,7 +45,11 @@ def test_set_verticals_raises_exception(mock_vertical, blank_transfer_service):
 @pytest.fixture
 def transfer_service(mock_vertical):
     mock_transfer_service = FakeTransferService(
-        [Vertical.FAKE_VERTICAL, Vertical.NEW_VERTICAL, Vertical.NEW_VERTICAL_EXTRA_SCOPE],
+        [
+            Vertical.FAKE_VERTICAL,
+            Vertical.NEW_VERTICAL,
+            Vertical.NEW_VERTICAL_EXTRA_SCOPE,
+        ],
         [Vertical.FAKE_VERTICAL],
     )
     mock_transfer_service.scope = sample_scope
@@ -62,17 +66,24 @@ def test_add_supported_verticals(mock_vertical, transfer_service):
     assert transfer_service.verticals == {Vertical.FAKE_VERTICAL, Vertical.NEW_VERTICAL}
 
 
-def test_add_unsupported_vertical_new_scope_required(monkeypatch, mock_vertical, transfer_service):
+def test_add_unsupported_vertical_new_scope_required(
+    monkeypatch, mock_vertical, transfer_service
+):
     def _mock_scope_for_verticals(verticals):
         if Vertical.NEW_VERTICAL_EXTRA_SCOPE in verticals:
             return {'new_scope'}
         return sample_scope
 
     transfer_service.access_token = 'access_token'
-    monkeypatch.setattr(transfer_service, 'scope_for_verticals', _mock_scope_for_verticals)
+    monkeypatch.setattr(
+        transfer_service, 'scope_for_verticals', _mock_scope_for_verticals
+    )
     assert not transfer_service.add_verticals(
         [Vertical.NEW_VERTICAL_EXTRA_SCOPE], should_reauth=True
     )
     assert not transfer_service.access_token
     assert transfer_service.scope == {'fake', 'scope', 'new_scope'}
-    assert transfer_service.verticals == {Vertical.FAKE_VERTICAL, Vertical.NEW_VERTICAL_EXTRA_SCOPE}
+    assert transfer_service.verticals == {
+        Vertical.FAKE_VERTICAL,
+        Vertical.NEW_VERTICAL_EXTRA_SCOPE,
+    }

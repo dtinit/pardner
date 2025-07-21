@@ -1,0 +1,34 @@
+name: Python Checks
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  check-python-app:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.8.0"
+
+      - name: Set up Python (latest)
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: "pyproject.toml"
+
+      - name: Run tests
+        run: uv run pytest tests --cov-fail-under=90
+
+      - name: Run mypy type check
+        run: uv run mypy . --config-file=pyproject.toml
+
+      - name: Run ruff linting
+        run: uv run ruff check --config=pyproject.toml
