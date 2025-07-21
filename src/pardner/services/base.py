@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Iterable
 
-from oauthlib.oauth2 import BackendApplicationClient
 from requests_oauthlib import OAuth2Session
 
 from pardner.verticals.base import Vertical
@@ -27,18 +26,14 @@ class UnsupportedVerticalException(Exception):
         )
 
 
-class BaseTransferService(OAuth2Session, ABC):
+class BaseTransferService(ABC):
     """
     A base class to be extended by service-specific classes that implement logic for
     OAuth 2.0 and data transfers.
-
-    :param client_id: Client identifier given by the OAuth provider upon registration.
-    :param client_secret: The `client_secret` paired to the `client_id`.
-    :param redirect_url: The registered callback URI.
     """
 
     _client_secret: str
-    _scope: set[str] = set()
+    _oAuth2Session: OAuth2Session
     _service_name: str
     _supported_verticals: set[Vertical] = set()
     _verticals: set[Vertical] = set()
@@ -52,11 +47,20 @@ class BaseTransferService(OAuth2Session, ABC):
         supported_verticals: set[Vertical],
         verticals: set[Vertical] = set(),
     ) -> None:
-        background_application_client = BackendApplicationClient(client_id)
-        super().__init__(
-            client_id=client_id,
-            client=background_application_client,
-            redirect_uri=redirect_uri,
+        """
+        Initializes an instance of BaseTransferService, which shouldn't be done unless
+        by classes that extend it.
+
+        :param service_name: Name of the service for which the transfer is being built.
+        :param client_id: Client identifier given by the OAuth provider upon registration.
+        :param client_secret: The `client_secret` paired to the `client_id`.
+        :param redirect_uri: The registered callback URI.
+        :param supported_verticals: The `Vertical`s that can be fetched on the service.
+        :param verticals: The `Vertical`s for which the transfer service has
+        appropriate scope to fetch.
+        """
+        self._oAuth2Session = OAuth2Session(
+            client_id=client_id, redirect_uri=redirect_uri
         )
         self._client_secret = client_secret
         self._supported_verticals = supported_verticals
@@ -66,6 +70,14 @@ class BaseTransferService(OAuth2Session, ABC):
     @property
     def name(self) -> str:
         return self._service_name
+
+    @property
+    def scope(self) -> set[str]:
+        return self._oAuth2Session.scope if self._oAuth2Session.scope else set()
+
+    @scope.setter
+    def scope(self, new_scope: Iterable[str]) -> None:
+        self._oAuth2Session.scope = set(new_scope)
 
     @property
     def verticals(self) -> set[Vertical]:
@@ -110,7 +122,7 @@ class BaseTransferService(OAuth2Session, ABC):
             raise InsufficientScopeException(verticals, self.name)
         elif not new_scopes.issubset(original_scopes):
             self.verticals = new_verticals | self.verticals
-            del self.access_token
+            del self._oAuth2Session.access_token
             self.scope = original_scopes | new_scopes
             return False
 
