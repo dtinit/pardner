@@ -14,15 +14,29 @@ classifiers = [
 ]
 license = "Apache-2.0"
 license-files = ["LICENSE"]
-dependencies = [
-    "oauthlib>=3.3.1",
-    "requests-oauthlib>=2.0.0",
-]
+dependencies = ["oauthlib>=3.3.1", "requests-oauthlib>=2.0.0"]
 
 [dependency-groups]
 dev = [
     "mypy>=1.17.0",
     "pytest>=8.4.1",
+    "pytest-cov>=6.2.1",
     "ruff>=0.12.3",
     "types-requests-oauthlib>=2.0.0.20250516",
 ]
+
+[tool.mypy]
+show_error_codes = true
+warn_return_any = true
+strict_optional = true
+disallow_incomplete_defs = true
+exclude_gitignore = true
+exclude = ["tests"]
+
+[tool.ruff]
+line-length = 88
+
+[tool.ruff.format]
+skip-magic-trailing-comma = true
+quote-style = "single"
+docstring-code-format = true
