@@ -74,14 +74,14 @@ def test_add_unsupported_vertical_new_scope_required(
             return {'new_scope'}
         return sample_scope
 
-    transfer_service.access_token = 'access_token'
+    transfer_service._oAuth2Session.access_token = 'access_token'
     monkeypatch.setattr(
         transfer_service, 'scope_for_verticals', _mock_scope_for_verticals
     )
     assert not transfer_service.add_verticals(
         [Vertical.NEW_VERTICAL_EXTRA_SCOPE], should_reauth=True
     )
-    assert not transfer_service.access_token
+    assert not transfer_service._oAuth2Session.access_token
     assert transfer_service.scope == {'fake', 'scope', 'new_scope'}
     assert transfer_service.verticals == {
         Vertical.FAKE_VERTICAL,
