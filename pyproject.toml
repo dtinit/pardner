@@ -41,3 +41,6 @@ line-length = 88
 skip-magic-trailing-comma = true
 quote-style = "single"
 docstring-code-format = true
+
+[tool.coverage.report]
+exclude_also = ['@(abc\.)?abstractmethod']
