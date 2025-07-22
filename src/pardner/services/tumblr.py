@@ -5,6 +5,12 @@ from pardner.verticals import Vertical
 
 
 class TumblrTransferService(BaseTransferService):
+    """
+    Class responsible for obtaining end-user authorization to make requests to
+    Tumblr's API.
+    See API documentation: https://www.tumblr.com/docs/en/api/v2
+    """
+
     _authorization_url = 'https://www.tumblr.com/oauth2/authorize'
     _token_url = 'https://api.tumblr.com/v2/oauth2/token'
 
