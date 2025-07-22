@@ -32,10 +32,12 @@ class BaseTransferService(ABC):
     OAuth 2.0 and data transfers.
     """
 
+    _authorization_url: str
     _client_secret: str
     _oAuth2Session: OAuth2Session
     _service_name: str
     _supported_verticals: set[Vertical] = set()
+    _token_url: str
     _verticals: set[Vertical] = set()
 
     def __init__(
