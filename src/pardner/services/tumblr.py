@@ -35,7 +35,6 @@ class TumblrTransferService(BaseTransferService):
         self, code: Optional[str] = None, authorization_response: Optional[str] = None
     ) -> dict[str, Any]:
         # Requires client_id
-        # https://www.tumblr.com/docs/en/api/v2#v2oauth2token---authorization-code-grant-request
         return self._oAuth2Session.fetch_token(
             token_url=self._token_url,
             code=code,
