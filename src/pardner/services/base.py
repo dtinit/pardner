@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
-from typing import Iterable
+from typing import Any, Iterable, Optional
 
 from requests_oauthlib import OAuth2Session
 
-from pardner.verticals.base import Vertical
+from pardner.verticals import Vertical
 
 
 class InsufficientScopeException(Exception):
@@ -32,10 +32,12 @@ class BaseTransferService(ABC):
     OAuth 2.0 and data transfers.
     """
 
+    _authorization_url: str
     _client_secret: str
     _oAuth2Session: OAuth2Session
     _service_name: str
     _supported_verticals: set[Vertical] = set()
+    _token_url: str
     _verticals: set[Vertical] = set()
 
     def __init__(
@@ -128,6 +130,37 @@ class BaseTransferService(ABC):
 
         self.verticals = new_verticals | self.verticals
         return True
+
+    @abstractmethod
+    def fetch_token(
+        self, code: Optional[str] = None, authorization_response: Optional[str] = None
+    ) -> dict[str, Any]:
+        """
+        Once the end-user authorizes the application to access their data, the
+        resource server sends a request to `redirect_uri` with the authorization code as
+        a parameter. Using this authorization code, this method makes a request to the
+        resource server to obtain the access token.
+
+        One of either `code` or `authorization_response` must not be None.
+
+        :param code: the code obtained from parsing the callback URL which the end-user's
+        browser redirected to.
+        :param authorization_response: the URL (with parameters) the end-user's browser
+        redirected to after authorization.
+
+        :returns: the authorization URL and state, respectively.
+        """
+        pass
+
+    @abstractmethod
+    def authorization_url(self) -> tuple[str, str]:
+        """
+        Builds the authorization URL and state. Once the end-user (i.e., resource owner)
+        navigates to the authorization URL they can begin the authorization flow.
+
+        :returns: the authorization URL and state, respectively.
+        """
+        pass
 
     @abstractmethod
     def scope_for_verticals(self, verticals: Iterable[Vertical]) -> set[str]:

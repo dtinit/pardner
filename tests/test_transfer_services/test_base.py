@@ -16,13 +16,18 @@ class FakeTransferService(BaseTransferService):
         self._supported_verticals = set(supported_verticals)
         self._verticals = set(verticals)
 
+    def authorization_url(self):
+        pass
+
+    def fetch_token(self, code=None, authorization_response=None):
+        pass
+
     def scope_for_verticals(self, verticals):
         return sample_scope
 
 
 @pytest.fixture
 def mock_vertical(monkeypatch):
-    Vertical.FAKE_VERTICAL = 'random_vertical'
     Vertical.NEW_VERTICAL = 'new_vertical'
     Vertical.NEW_VERTICAL_EXTRA_SCOPE = 'new_vertical_unsupported'
 
@@ -34,23 +39,19 @@ def blank_transfer_service(monkeypatch):
 
 def test_add_verticals_raises_exception(mock_vertical, blank_transfer_service):
     with pytest.raises(InsufficientScopeException):
-        blank_transfer_service.add_verticals([Vertical.FAKE_VERTICAL])
+        blank_transfer_service.add_verticals([Vertical.FeedPost])
 
 
 def test_set_verticals_raises_exception(mock_vertical, blank_transfer_service):
     with pytest.raises(UnsupportedVerticalException):
-        blank_transfer_service.verticals = [Vertical.FAKE_VERTICAL]
+        blank_transfer_service.verticals = [Vertical.FeedPost]
 
 
 @pytest.fixture
 def transfer_service(mock_vertical):
     mock_transfer_service = FakeTransferService(
-        [
-            Vertical.FAKE_VERTICAL,
-            Vertical.NEW_VERTICAL,
-            Vertical.NEW_VERTICAL_EXTRA_SCOPE,
-        ],
-        [Vertical.FAKE_VERTICAL],
+        [Vertical.FeedPost, Vertical.NEW_VERTICAL, Vertical.NEW_VERTICAL_EXTRA_SCOPE],
+        [Vertical.FeedPost],
     )
     mock_transfer_service.scope = sample_scope
     return mock_transfer_service
@@ -63,7 +64,7 @@ def test_set_supported_verticals(mock_vertical, transfer_service):
 
 def test_add_supported_verticals(mock_vertical, transfer_service):
     assert transfer_service.add_verticals([Vertical.NEW_VERTICAL])
-    assert transfer_service.verticals == {Vertical.FAKE_VERTICAL, Vertical.NEW_VERTICAL}
+    assert transfer_service.verticals == {Vertical.FeedPost, Vertical.NEW_VERTICAL}
 
 
 def test_add_unsupported_vertical_new_scope_required(
@@ -84,6 +85,6 @@ def test_add_unsupported_vertical_new_scope_required(
     assert not transfer_service._oAuth2Session.access_token
     assert transfer_service.scope == {'fake', 'scope', 'new_scope'}
     assert transfer_service.verticals == {
-        Vertical.FAKE_VERTICAL,
+        Vertical.FeedPost,
         Vertical.NEW_VERTICAL_EXTRA_SCOPE,
     }

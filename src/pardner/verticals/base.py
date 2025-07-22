@@ -7,4 +7,4 @@ class Vertical(StrEnum):
     Not all verticals are supported by every transfer service.
     """
 
-    pass
+    FeedPost = 'feed_post'
