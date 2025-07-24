@@ -43,8 +43,6 @@ def fetch_token(
     authorization_response: Optional[str] = None,
     client_secret: Optional[str] = None,
     code: Optional[str] = None,
-    include_client_id: Optional[bool] = None,
-    scope: Scope = {'base'},
 ) -> dict[str, Any]:
     """
     Makes a request to Tumblr's resource server to obtain the access token.
@@ -59,18 +57,16 @@ def fetch_token(
     redirected to after authorization.
     :param client_secret: The `client_secret` paired to the `client_id`.
     :param code: Authorization code (used by WebApplicationClients).
-    :param include_client_id: Should the request body include the
-    `client_id` parameter.
 
     :returns: the authorization URL and state, respectively.
     """
     return generic_fetch_token(
         client_id,
         redirect_uri,
-        scope,
+        {'base'},
         URLs.TokenURL,
         authorization_response,
         client_secret,
         code,
-        include_client_id,
+        include_client_id=True,
     )

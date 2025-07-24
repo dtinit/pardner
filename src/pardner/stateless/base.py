@@ -45,12 +45,11 @@ def generic_fetch_token(
 
     One of either `code` or `authorization_response` must not be None.
 
-    :param authorization_url_endpoint: The service's endpoint that must be hit to begin
-    the OAuth 2 flow.
     :param client_id: Client identifier given by the OAuth provider upon registration.
     :param redirect_uri: The registered callback URI.
     :param scope: The scope of the access request. These may be any string but are
     commonly URIs or various categories such as ``videos`` or ``documents``.
+    :param token_url: Token endpoint HTTPS URL.
     :param authorization_response: the URL (with parameters) the end-user's browser
     redirected to after authorization.
     :param client_secret: The `client_secret` paired to the `client_id`.
