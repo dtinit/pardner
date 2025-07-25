@@ -1,6 +1,7 @@
 from typing import Any, Iterable, Optional
 
 from pardner.services import BaseTransferService
+from pardner.stateless.tumblr import URLs
 from pardner.verticals import Vertical
 
 
@@ -11,8 +12,8 @@ class TumblrTransferService(BaseTransferService):
     See API documentation: https://www.tumblr.com/docs/en/api/v2
     """
 
-    _authorization_url = 'https://www.tumblr.com/oauth2/authorize'
-    _token_url = 'https://api.tumblr.com/v2/oauth2/token'
+    _authorization_url = URLs.AuthorizationURL
+    _token_url = URLs.TokenURL
 
     def __init__(
         self,
