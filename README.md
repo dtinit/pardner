@@ -2,16 +2,6 @@
 
 Python library for authorizing access and fetching personal data from portability APIs and services
 
-## Using `pardner`
-
-### With classes
-
-In `services/` you'll find classes defined for different services that are supported by the library (e.g., Tumblr). You can make an instance of that class and use that same object for getting initial authorization from a user and for making data transfer requests.
-
-### Stateless mode
-
-In `stateless/` there are modules that expose functions grouped by service that allow you to complete the same tasks as in the classes described above. Unlike using pardner with the classes we provide, however, you supply the necessary data each time you make a request for each request.
-
 ## Developer set-up
 
 > **tl;dr**:
