@@ -131,7 +131,6 @@ class BaseTransferService(ABC):
         self.verticals = new_verticals | self.verticals
         return True
 
-    @abstractmethod
     def fetch_token(
         self, code: Optional[str] = None, authorization_response: Optional[str] = None
     ) -> dict[str, Any]:
@@ -150,9 +149,14 @@ class BaseTransferService(ABC):
 
         :returns: the authorization URL and state, respectively.
         """
-        pass
+        return self._oAuth2Session.fetch_token(
+            token_url=self._token_url,
+            code=code,
+            authorization_response=authorization_response,
+            include_client_id=True,
+            client_secret=self._client_secret,
+        )
 
-    @abstractmethod
     def authorization_url(self) -> tuple[str, str]:
         """
         Builds the authorization URL and state. Once the end-user (i.e., resource owner)
@@ -160,7 +164,7 @@ class BaseTransferService(ABC):
 
         :returns: the authorization URL and state, respectively.
         """
-        pass
+        return self._oAuth2Session.authorization_url(self._authorization_url)
 
     @abstractmethod
     def scope_for_verticals(self, verticals: Iterable[Vertical]) -> set[str]:

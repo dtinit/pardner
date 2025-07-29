@@ -34,9 +34,6 @@ class TumblrTransferService(BaseTransferService):
         # Tumblr only needs 'base' for read access requests
         return {'base'}
 
-    def authorization_url(self) -> tuple[str, str]:
-        return self._oAuth2Session.authorization_url(self._authorization_url)
-
     def fetch_token(
         self, code: Optional[str] = None, authorization_response: Optional[str] = None
     ) -> dict[str, Any]:
