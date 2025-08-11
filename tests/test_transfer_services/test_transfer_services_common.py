@@ -1,7 +1,5 @@
 import pytest
 
-# TODO: can't figure out how to run parametrized tests with fixtures
-
 
 @pytest.mark.parametrize(
     'mock_transfer_service_name',
