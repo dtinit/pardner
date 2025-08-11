@@ -7,7 +7,4 @@ class Vertical(StrEnum):
     Not all verticals are supported by every transfer service.
     """
 
-    ExerciseAction = 'exercise_action'
     FeedPost = 'feed_post'
-    Follower = 'follower'
-    Profile = 'profile'

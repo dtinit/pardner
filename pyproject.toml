@@ -31,7 +31,6 @@ show_error_codes = true
 warn_return_any = true
 strict_optional = true
 disallow_incomplete_defs = true
-exclude_gitignore = true
 exclude = ["tests"]
 
 [tool.ruff]
