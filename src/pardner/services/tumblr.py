@@ -1,4 +1,4 @@
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, override
 
 from pardner.services import BaseTransferService
 from pardner.verticals import Vertical
@@ -19,6 +19,7 @@ class TumblrTransferService(BaseTransferService):
         client_id: str,
         client_secret: str,
         redirect_uri: str,
+        state: Optional[str] = None,
         verticals: set[Vertical] = set(),
     ) -> None:
         super().__init__(
@@ -26,25 +27,21 @@ class TumblrTransferService(BaseTransferService):
             client_id=client_id,
             client_secret=client_secret,
             redirect_uri=redirect_uri,
+            state=state,
             supported_verticals={Vertical.FeedPost},
             verticals=verticals,
         )
 
+    @override
     def scope_for_verticals(self, verticals: Iterable[Vertical]) -> set[str]:
         # Tumblr only needs 'base' for read access requests
         return {'base'}
 
-    def authorization_url(self) -> tuple[str, str]:
-        return self._oAuth2Session.authorization_url(self._authorization_url)
-
+    @override
     def fetch_token(
-        self, code: Optional[str] = None, authorization_response: Optional[str] = None
+        self,
+        code: Optional[str] = None,
+        authorization_response: Optional[str] = None,
+        include_client_id: bool = True,
     ) -> dict[str, Any]:
-        # Requires client_id
-        return self._oAuth2Session.fetch_token(
-            token_url=self._token_url,
-            code=code,
-            authorization_response=authorization_response,
-            include_client_id=True,
-            client_secret=self._client_secret,
-        )
+        return super().fetch_token(code, authorization_response, include_client_id)

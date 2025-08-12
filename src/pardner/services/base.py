@@ -3,6 +3,7 @@ from typing import Any, Iterable, Optional
 
 from requests_oauthlib import OAuth2Session
 
+from pardner.services.utils import scope_as_set, scope_as_string
 from pardner.verticals import Vertical
 
 
@@ -47,6 +48,7 @@ class BaseTransferService(ABC):
         client_secret: str,
         redirect_uri: str,
         supported_verticals: set[Vertical],
+        state: Optional[str] = None,
         verticals: set[Vertical] = set(),
     ) -> None:
         """
@@ -58,16 +60,18 @@ class BaseTransferService(ABC):
         :param client_secret: The `client_secret` paired to the `client_id`.
         :param redirect_uri: The registered callback URI.
         :param supported_verticals: The `Vertical`s that can be fetched on the service.
+        :param state: State string used to prevent CSRF and identify flow.
         :param verticals: The `Vertical`s for which the transfer service has
         appropriate scope to fetch.
         """
-        self._oAuth2Session = OAuth2Session(
-            client_id=client_id, redirect_uri=redirect_uri
-        )
         self._client_secret = client_secret
         self._supported_verticals = supported_verticals
         self._service_name = service_name
         self._verticals = verticals
+        self._oAuth2Session = OAuth2Session(
+            client_id=client_id, redirect_uri=redirect_uri, state=state
+        )
+        self.scope = self.scope_for_verticals(verticals)
 
     @property
     def name(self) -> str:
@@ -75,11 +79,23 @@ class BaseTransferService(ABC):
 
     @property
     def scope(self) -> set[str]:
-        return self._oAuth2Session.scope if self._oAuth2Session.scope else set()
+        return (
+            scope_as_set(self._oAuth2Session.scope)
+            if self._oAuth2Session.scope
+            else set()
+        )
 
     @scope.setter
     def scope(self, new_scope: Iterable[str]) -> None:
-        self._oAuth2Session.scope = set(new_scope)
+        """
+        Sets the scope of the transfer service flow.
+        Some services have specific requirements for the format of the scope
+        string (e.g., scopes have to be comma separated, or `+` separated).
+
+        :param new_scope: The new scopes that should be set for the transfer
+        service.
+        """
+        self._oAuth2Session.scope = scope_as_string(new_scope)
 
     @property
     def verticals(self) -> set[Vertical]:
@@ -118,22 +134,23 @@ class BaseTransferService(ABC):
         """
         new_verticals = set(verticals) - self.verticals
         new_scopes = self.scope_for_verticals(new_verticals)
-        original_scopes: set[str] = self.scope if self.scope else set()
 
-        if not new_scopes.issubset(original_scopes) and not should_reauth:
+        if not new_scopes.issubset(self.scope) and not should_reauth:
             raise InsufficientScopeException(verticals, self.name)
-        elif not new_scopes.issubset(original_scopes):
+        elif not new_scopes.issubset(self.scope):
             self.verticals = new_verticals | self.verticals
             del self._oAuth2Session.access_token
-            self.scope = original_scopes | new_scopes
+            self.scope = self.scope | new_scopes
             return False
 
         self.verticals = new_verticals | self.verticals
         return True
 
-    @abstractmethod
     def fetch_token(
-        self, code: Optional[str] = None, authorization_response: Optional[str] = None
+        self,
+        code: Optional[str] = None,
+        authorization_response: Optional[str] = None,
+        include_client_id: bool = False,
     ) -> dict[str, Any]:
         """
         Once the end-user authorizes the application to access their data, the
@@ -147,12 +164,18 @@ class BaseTransferService(ABC):
         browser redirected to.
         :param authorization_response: the URL (with parameters) the end-user's browser
         redirected to after authorization.
+        :param include_client_id: whether or not to send the client ID with the token request
 
         :returns: the authorization URL and state, respectively.
         """
-        pass
+        return self._oAuth2Session.fetch_token(
+            token_url=self._token_url,
+            code=code,
+            authorization_response=authorization_response,
+            include_client_id=include_client_id,
+            client_secret=self._client_secret,
+        )
 
-    @abstractmethod
     def authorization_url(self) -> tuple[str, str]:
         """
         Builds the authorization URL and state. Once the end-user (i.e., resource owner)
@@ -160,7 +183,7 @@ class BaseTransferService(ABC):
 
         :returns: the authorization URL and state, respectively.
         """
-        pass
+        return self._oAuth2Session.authorization_url(self._authorization_url)
 
     @abstractmethod
     def scope_for_verticals(self, verticals: Iterable[Vertical]) -> set[str]:
