@@ -34,8 +34,8 @@ class TumblrTransferService(BaseTransferService):
 
     @override
     def scope_for_verticals(self, verticals: Iterable[Vertical]) -> set[str]:
-        # Tumblr only needs 'base' for read access requests
-        return {'base'}
+        # Tumblr only needs 'basic' for read access requests
+        return {'basic'}
 
     @override
     def fetch_token(
