@@ -1,6 +1,11 @@
 from typing import Any, Iterable, Optional, override
+from urllib.parse import urljoin
 
-from pardner.services.base import BaseTransferService, UnsupportedVerticalException
+from pardner.services.base import (
+    BaseTransferService,
+    UnsupportedRequestException,
+    UnsupportedVerticalException,
+)
 from pardner.services.utils import scope_as_set, scope_as_string
 from pardner.verticals import Vertical
 
@@ -13,6 +18,7 @@ class StravaTransferService(BaseTransferService):
     """
 
     _authorization_url = 'https://www.strava.com/oauth/authorize'
+    _base_url = 'https://www.strava.com/'
     _token_url = 'https://www.strava.com/oauth/token'
 
     def __init__(
@@ -29,7 +35,7 @@ class StravaTransferService(BaseTransferService):
             client_secret=client_secret,
             redirect_uri=redirect_uri,
             state=state,
-            supported_verticals={Vertical.FeedPost},
+            supported_verticals={Vertical.PhysicalActivity},
             verticals=verticals,
         )
 
@@ -56,6 +62,38 @@ class StravaTransferService(BaseTransferService):
         for vertical in verticals:
             if vertical not in self._supported_verticals:
                 raise UnsupportedVerticalException([vertical], self._service_name)
-            if vertical == Vertical.FeedPost:
+            if vertical == Vertical.PhysicalActivity:
                 sub_scopes.update(['activity:read', 'profile:read_all'])
         return sub_scopes
+
+    def fetch_athlete_activities(
+        self, count: int = 30, request_params: dict[str, Any] = {}
+    ) -> list[Any]:
+        """
+        Fetches and returns activities completed by the authorized user.
+
+        :param count: number of activities to request. At most 30 at a time.
+        :param request_params: any other endpoint-specific parameters to be sent
+        to the endpoint. Depending on the parameters passed, this could override
+        the other arguments to this method.
+
+        :returns: a list of dictionary objects with information for the activities from
+        the authorized user.
+
+        :raises: :class:`UnsupportedRequestException` if the request is unable to be
+        made.
+        """
+        max_count = 30
+        if count <= max_count:
+            athlete_activities_uri = urljoin(
+                self._base_url, '/api/v3/athlete/activities'
+            )
+            return list(
+                self._get_resource(
+                    athlete_activities_uri, params={'per_page': count, **request_params}
+                ).json()
+            )
+        raise UnsupportedRequestException(
+            self._service_name,
+            f'can only make a request for at most {max_count} activities at a time.',
+        )

@@ -8,3 +8,4 @@ class Vertical(StrEnum):
     """
 
     FeedPost = 'feed_post'
+    PhysicalActivity = 'physical_activity'

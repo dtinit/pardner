@@ -73,17 +73,15 @@ class TumblrTransferService(BaseTransferService):
         """
         dashboard_uri = urljoin(self._base_url, '/v2/user/dashboard')
         if count <= 20:
-            dashboard_response = self._oAuth2Session.get(
+            dashboard_response = self._get_resource(
                 dashboard_uri,
-                params={
+                {
                     'limit': count,
                     'npf': True,
                     'type': 'text' if text_only else '',
                     **request_params,
                 },
             )
-            if not dashboard_response.ok:
-                dashboard_response.raise_for_status()
             return list(dashboard_response.json().get('response').get('posts'))
         raise UnsupportedRequestException(
             self._service_name,
