@@ -110,8 +110,11 @@ def test_fetch_token_raises_error(mock_transfer_service):
         mock_transfer_service.fetch_token()
 
 
-def test_fetch_token(mock_oAuth2Session, mock_strava_transfer_service):
-    [mock_request, mock_response] = mock_oAuth2Session
+def test_fetch_token(
+    mock_oauth2_session_request,
+    mock_oauth2_session_response,
+    mock_strava_transfer_service,
+):
     mock_strava_transfer_service.fetch_token(code='123code123')
-    mock_request.assert_called_once()
-    mock_response.assert_called_once()
+    mock_oauth2_session_request.assert_called_once()
+    mock_oauth2_session_response.assert_called_once()

@@ -27,6 +27,11 @@ class UnsupportedVerticalException(Exception):
         )
 
 
+class UnsupportedRequestException(Exception):
+    def __init__(self, service_name: str, message: str):
+        super().__init__(f'Cannot fetch data from {service_name}: {message}')
+
+
 class BaseTransferService(ABC):
     """
     A base class to be extended by service-specific classes that implement logic for
@@ -34,6 +39,7 @@ class BaseTransferService(ABC):
     """
 
     _authorization_url: str
+    _base_url: str
     _client_secret: str
     _oAuth2Session: OAuth2Session
     _service_name: str

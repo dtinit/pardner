@@ -1,6 +1,9 @@
 import pytest
+from requests import HTTPError, Response
 
+from pardner.services.base import UnsupportedRequestException
 from pardner.verticals import Vertical
+from tests.test_transfer_services.conftest import mock_oauth2_session_get
 
 sample_scope = {'fake', 'scope'}
 
@@ -10,3 +13,35 @@ sample_scope = {'fake', 'scope'}
 )
 def test_scope_for_vertical(mock_tumblr_transfer_service, verticals, expected_scope):
     assert mock_tumblr_transfer_service.scope_for_verticals(verticals) == expected_scope
+
+
+def test_fetch_feed_posts_raises_exception(mock_tumblr_transfer_service):
+    with pytest.raises(UnsupportedRequestException):
+        mock_tumblr_transfer_service.fetch_feed_posts(count=21)
+
+
+def test_fetch_feed_posts_raises_http_exception(mocker, mock_tumblr_transfer_service):
+    mock_response = mocker.create_autospec(Response)
+    mock_response.ok = False
+    mock_response.status_code = 400
+    mock_response.reason = 'fake reason'
+    mock_response.url = 'fake url'
+    mock_response.raise_for_status = lambda: Response.raise_for_status(mock_response)
+
+    mock_oauth2_session_get(mocker, mock_response)
+
+    with pytest.raises(HTTPError):
+        mock_tumblr_transfer_service.fetch_feed_posts()
+
+
+def test_fetch_feed_posts(mocker, mock_tumblr_transfer_service):
+    response_object = mocker.MagicMock()
+    response_object.json.return_value = {'response': {'posts': ['sample', 'posts']}}
+
+    oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
+
+    assert mock_tumblr_transfer_service.fetch_feed_posts() == ['sample', 'posts']
+    assert (
+        oauth2_session_get.call_args.args[1]
+        == 'https://api.tumblr.com/v2/user/dashboard'
+    )

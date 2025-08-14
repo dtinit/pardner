@@ -1,6 +1,8 @@
 from typing import Any, Iterable, Optional, override
+from urllib.parse import urljoin
 
 from pardner.services import BaseTransferService
+from pardner.services.base import UnsupportedRequestException
 from pardner.verticals import Vertical
 
 
@@ -12,6 +14,7 @@ class TumblrTransferService(BaseTransferService):
     """
 
     _authorization_url = 'https://www.tumblr.com/oauth2/authorize'
+    _base_url = 'https://api.tumblr.com/'
     _token_url = 'https://api.tumblr.com/v2/oauth2/token'
 
     def __init__(
@@ -45,3 +48,44 @@ class TumblrTransferService(BaseTransferService):
         include_client_id: bool = True,
     ) -> dict[str, Any]:
         return super().fetch_token(code, authorization_response, include_client_id)
+
+    def fetch_feed_posts(
+        self,
+        count: int = 20,
+        text_only: bool = True,
+        request_params: dict[str, Any] = {},
+    ) -> list[Any]:
+        """
+        Fetches posts from Tumblr feed for user account whose token was
+        obtained using the Tumblr API.
+
+        :param count: number of posts to request.
+        :param text_only: whether or not to request only text-based posts (`True`) or
+        not (`False).
+        :param request_params: any other endpoint-specific parameters to be sent
+        to the endpoint. Depending on the parameters passed, this could override
+        `count` and `text_only`.
+
+        :returns: a list of dictionary objects with information for the posts in a feed.
+
+        :raises: :class:`UnsupportedRequestException` if the request is unable to be
+        made.
+        """
+        dashboard_uri = urljoin(self._base_url, '/v2/user/dashboard')
+        if count <= 20:
+            dashboard_response = self._oAuth2Session.get(
+                dashboard_uri,
+                params={
+                    'limit': count,
+                    'npf': True,
+                    'type': 'text' if text_only else '',
+                    **request_params,
+                },
+            )
+            if not dashboard_response.ok:
+                dashboard_response.raise_for_status()
+            return list(dashboard_response.json().get('response').get('posts'))
+        raise UnsupportedRequestException(
+            self._service_name,
+            'can only make a request for at most 20 posts at a time.',
+        )
