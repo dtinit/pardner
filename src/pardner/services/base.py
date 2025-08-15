@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Optional
 
+from requests import Response
 from requests_oauthlib import OAuth2Session
 
 from pardner.services.utils import scope_as_set, scope_as_string
@@ -121,6 +122,20 @@ class BaseTransferService(ABC):
         if len(unsupported_verticals) > 0:
             raise UnsupportedVerticalException(unsupported_verticals, self.name)
         self._verticals = set(verticals)
+
+    def _get_resource(self, uri: str, params: dict[str, Any] = {}) -> Response:
+        """
+        Sends a GET request to ``uri`` using :class:`OAuth2Session`.
+
+        :param uri: the destination of the request (a URI).
+        :param params: the extra parameters to be send with the request, optionally.
+
+        :returns: The :class:`requests.Response` object obtained from making the request.
+        """
+        response = self._oAuth2Session.get(uri, params=params)
+        if not response.ok:
+            response.raise_for_status()
+        return response
 
     def add_verticals(
         self, verticals: Iterable[Vertical], should_reauth: bool = False

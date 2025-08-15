@@ -1,11 +1,9 @@
 import pytest
-from requests import HTTPError, Response
+from requests import HTTPError
 
 from pardner.services.base import UnsupportedRequestException
 from pardner.verticals import Vertical
 from tests.test_transfer_services.conftest import mock_oauth2_session_get
-
-sample_scope = {'fake', 'scope'}
 
 
 @pytest.mark.parametrize(
@@ -20,16 +18,9 @@ def test_fetch_feed_posts_raises_exception(mock_tumblr_transfer_service):
         mock_tumblr_transfer_service.fetch_feed_posts(count=21)
 
 
-def test_fetch_feed_posts_raises_http_exception(mocker, mock_tumblr_transfer_service):
-    mock_response = mocker.create_autospec(Response)
-    mock_response.ok = False
-    mock_response.status_code = 400
-    mock_response.reason = 'fake reason'
-    mock_response.url = 'fake url'
-    mock_response.raise_for_status = lambda: Response.raise_for_status(mock_response)
-
-    mock_oauth2_session_get(mocker, mock_response)
-
+def test_fetch_feed_posts_raises_http_exception(
+    mock_tumblr_transfer_service, mock_oauth2_session_get_bad_response
+):
     with pytest.raises(HTTPError):
         mock_tumblr_transfer_service.fetch_feed_posts()
 
