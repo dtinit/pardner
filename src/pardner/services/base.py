@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Optional
+from urllib.parse import urljoin
 
 from requests import Response
 from requests_oauthlib import OAuth2Session
@@ -41,7 +42,7 @@ class BaseTransferService(ABC):
 
     _authorization_url: str
     _base_url: str
-    _client_secret: str
+    _client_secret: str | None
     _oAuth2Session: OAuth2Session
     _service_name: str
     _supported_verticals: set[Vertical] = set()
@@ -52,9 +53,9 @@ class BaseTransferService(ABC):
         self,
         service_name: str,
         client_id: str,
-        client_secret: str,
         redirect_uri: str,
         supported_verticals: set[Vertical],
+        client_secret: Optional[str] = None,
         state: Optional[str] = None,
         verticals: set[Vertical] = set(),
     ) -> None:
@@ -64,9 +65,9 @@ class BaseTransferService(ABC):
 
         :param service_name: Name of the service for which the transfer is being built.
         :param client_id: Client identifier given by the OAuth provider upon registration.
-        :param client_secret: The `client_secret` paired to the `client_id`.
         :param redirect_uri: The registered callback URI.
         :param supported_verticals: The `Vertical`s that can be fetched on the service.
+        :param client_secret: The `client_secret` paired to the `client_id`.
         :param state: State string used to prevent CSRF and identify flow.
         :param verticals: The `Vertical`s for which the transfer service has
         appropriate scope to fetch.
@@ -136,6 +137,26 @@ class BaseTransferService(ABC):
         if not response.ok:
             response.raise_for_status()
         return response
+
+    def _build_resource_url(self, path: str, base: Optional[str] = None) -> str:
+        """
+        Constructs the resource URL from a domain and path fragment.
+
+        :param path: the path to append to the end of ``base``.
+        :param base: the prefix of the resource URL. If not given, defaults to
+        ``self._base_url``.
+
+        :returns: the complete resource URL.
+        """
+        if not base:
+            base = self._base_url
+        if not base.endswith('/'):
+            base += '/'
+
+        if path.startswith('/'):
+            path = path[1:]
+
+        return urljoin(base, path)
 
     def add_verticals(
         self, verticals: Iterable[Vertical], should_reauth: bool = False
