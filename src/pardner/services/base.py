@@ -125,17 +125,17 @@ class BaseTransferService(ABC):
 
     def _get_resource(self, uri: str, params: dict[str, Any] = {}) -> Response:
         """
-        Sends a GET request to `uri` using `OAuth2Session`.
+        Sends a GET request to ``uri`` using :class:`OAuth2Session`.
 
         :param uri: the destination of the request (a URI).
         :param params: the extra parameters to be send with the request, optionally.
 
-        :returns: The `requests.Response` object obtained from making the request.
+        :returns: The :class:`requests.Response` object obtained from making the request.
         """
-        dashboard_response = self._oAuth2Session.get(uri, params=params)
-        if not dashboard_response.ok:
-            dashboard_response.raise_for_status()
-        return dashboard_response
+        response = self._oAuth2Session.get(uri, params=params)
+        if not response.ok:
+            response.raise_for_status()
+        return response
 
     def add_verticals(
         self, verticals: Iterable[Vertical], should_reauth: bool = False
