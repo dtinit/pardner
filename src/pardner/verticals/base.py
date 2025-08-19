@@ -11,6 +11,6 @@ class Vertical(StrEnum):
     ChatBot = 'chat_bot'
     ConversationDirect = 'conversation_direct'
     ConversationGroup = 'conversation_group'
-    FeedPost = 'feed_post'
     ConversationMessage = 'conversation_message'
+    FeedPost = 'feed_post'
     PhysicalActivity = 'physical_activity'
