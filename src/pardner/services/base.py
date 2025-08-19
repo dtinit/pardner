@@ -138,11 +138,11 @@ class BaseTransferService(ABC):
             response.raise_for_status()
         return response
 
-    def _build_resource_url(self, path: str, base: Optional[str] = None) -> str:
+    def _build_resource_url(self, path_suffix: str, base: Optional[str] = None) -> str:
         """
         Constructs the resource URL from a domain and path fragment.
 
-        :param path: the path to append to the end of ``base``.
+        :param path_suffix: the path to append to ``base``.
         :param base: the prefix of the resource URL. If not given, defaults to
         ``self._base_url``.
 
@@ -153,10 +153,24 @@ class BaseTransferService(ABC):
         if not base.endswith('/'):
             base += '/'
 
-        if path.startswith('/'):
-            path = path[1:]
+        if path_suffix.startswith('/'):
+            path_suffix = path_suffix[1:]
 
-        return urljoin(base, path)
+        return urljoin(base, path_suffix)
+
+    def _get_resource_from_path(
+        self, path_suffix: str, params: dict[str, Any] = {}
+    ) -> Response:
+        """
+        Sends a GET request to the endpoint URL built using ``endpoint_path``.
+
+        :param path_suffix: the path of the endpoint being accessed.
+        :param params: the extra parameters to be send with the request, optionally.
+
+        :returns: The :class:`requests.Response` object obtained from making the request.
+        """
+        resource_url = self._build_resource_url(path_suffix)
+        return self._get_resource(resource_url, params)
 
     def add_verticals(
         self, verticals: Iterable[Vertical], should_reauth: bool = False

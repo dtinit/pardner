@@ -5,5 +5,6 @@ from pardner.services.base import (
 from pardner.services.base import (
     UnsupportedVerticalException as UnsupportedVerticalException,
 )
+from pardner.services.groupme import GroupMeTransferService as GroupMeTransferService
 from pardner.services.strava import StravaTransferService as StravaTransferService
 from pardner.services.tumblr import TumblrTransferService as TumblrTransferService

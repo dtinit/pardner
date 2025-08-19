@@ -9,8 +9,7 @@ class Vertical(StrEnum):
 
     BlockedUser = 'blocked_user'
     ChatBot = 'chat_bot'
-    Conversation = 'conversation'
-    ConversationMember = 'conversation_member'
-    ConversationMessage = 'conversation_message'
+    ConversationDirect = 'conversation_direct'
+    ConversationGroup = 'conversation_group'
     FeedPost = 'feed_post'
     PhysicalActivity = 'physical_activity'

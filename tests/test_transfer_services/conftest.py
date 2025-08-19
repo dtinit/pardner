@@ -2,9 +2,12 @@ import pytest
 from requests import Response
 from requests_oauthlib import OAuth2Session
 
-from pardner.services.strava import StravaTransferService
-from pardner.services.tumblr import TumblrTransferService
-from pardner.verticals.base import Vertical
+from pardner.services import (
+    GroupMeTransferService,
+    StravaTransferService,
+    TumblrTransferService,
+)
+from pardner.verticals import Vertical
 
 # FIXTURES
 
@@ -42,6 +45,20 @@ def mock_strava_transfer_service(verticals=[Vertical.PhysicalActivity]):
 
 
 @pytest.fixture
+def mock_groupme_transfer_service(
+    verticals=[Vertical.BlockedUser, Vertical.ConversationDirect],
+):
+    groupme = GroupMeTransferService(
+        client_id='fake_client_id',
+        redirect_uri='https://redirect_uri',
+        verticals=verticals,
+    )
+    groupme._oAuth2Session.token = {'access_token': 'fake_token'}
+    groupme._user_id = None
+    return groupme
+
+
+@pytest.fixture
 def mock_oauth2_bad_response(mocker):
     mock_response = mocker.create_autospec(Response)
     mock_response.ok = False
@@ -62,7 +79,7 @@ def mock_oauth2_session_get_bad_response(mocker, mock_oauth2_bad_response):
 # HELPERS
 
 
-def mock_oauth2_session_get(mocker, response_object):
+def mock_oauth2_session_get(mocker, response_object=None):
     oauth2_session_get = mocker.patch.object(OAuth2Session, 'get', autospec=True)
     oauth2_session_get.return_value = response_object
     return oauth2_session_get

@@ -70,10 +70,9 @@ class TumblrTransferService(BaseTransferService):
         :raises: :class:`UnsupportedRequestException` if the request is unable to be
         made.
         """
-        dashboard_uri = self._build_resource_url('user/dashboard')
         if count <= 20:
-            dashboard_response = self._get_resource(
-                dashboard_uri,
+            dashboard_response = self._get_resource_from_path(
+                'user/dashboard',
                 {
                     'limit': count,
                     'npf': True,

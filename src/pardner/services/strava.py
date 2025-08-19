@@ -84,10 +84,9 @@ class StravaTransferService(BaseTransferService):
         """
         max_count = 30
         if count <= max_count:
-            athlete_activities_uri = self._build_resource_url('athlete/activities')
             return list(
-                self._get_resource(
-                    athlete_activities_uri, params={'per_page': count, **request_params}
+                self._get_resource_from_path(
+                    'athlete/activities', params={'per_page': count, **request_params}
                 ).json()
             )
         raise UnsupportedRequestException(
