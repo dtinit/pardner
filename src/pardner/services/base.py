@@ -140,7 +140,7 @@ class BaseTransferService(ABC):
 
     def _build_resource_url(self, path_suffix: str, base: Optional[str] = None) -> str:
         """
-        Constructs the resource URL from a domain and path fragment.
+        Constructs the resource URL from a domain and path suffix.
 
         :param path_suffix: the path to append to ``base``.
         :param base: the prefix of the resource URL. If not given, defaults to
