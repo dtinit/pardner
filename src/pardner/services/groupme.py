@@ -151,10 +151,10 @@ class GroupMeTransferService(BaseTransferService):
         """
         Sends a GET request to fetch the conversations the authenticated user is a part
         of with only one other member (i.e., a direct message). The response will
-        include metadata associated with the conversation and messages from the
-        conversation.
+        include metadata associated with the conversation, but no more than one message
+        from the conversation.
 
-        :param count: the number of messages to fetch. Defaults to 10.
+        :param count: the number of conversations to fetch. Defaults to 10.
 
         :returns: a JSON object with the result of the request.
         """
@@ -168,10 +168,10 @@ class GroupMeTransferService(BaseTransferService):
     def fetch_conversations_group(self, count: int = 10) -> Any:
         """
         Sends a GET request to fetch the group conversations the authenticated user is
-        a part of. The response will include metadata associated with the conversation
-        and messages from the conversation.
+        a part of. The response will include metadata associated with the conversation,
+        but no more than one message from the conversation.
 
-        :param count: the number of messages to fetch. Defaults to 10.
+        :param count: the number of conversations to fetch. Defaults to 10.
 
         :returns: a JSON object with the result of the request.
         """

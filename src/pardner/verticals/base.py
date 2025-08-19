@@ -12,4 +12,5 @@ class Vertical(StrEnum):
     ConversationDirect = 'conversation_direct'
     ConversationGroup = 'conversation_group'
     FeedPost = 'feed_post'
+    ConversationMessage = 'conversation_message'
     PhysicalActivity = 'physical_activity'
