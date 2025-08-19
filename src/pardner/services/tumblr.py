@@ -1,5 +1,4 @@
 from typing import Any, Iterable, Optional, override
-from urllib.parse import urljoin
 
 from pardner.services import BaseTransferService
 from pardner.services.base import UnsupportedRequestException
@@ -14,7 +13,7 @@ class TumblrTransferService(BaseTransferService):
     """
 
     _authorization_url = 'https://www.tumblr.com/oauth2/authorize'
-    _base_url = 'https://api.tumblr.com/'
+    _base_url = 'https://api.tumblr.com/v2/'
     _token_url = 'https://api.tumblr.com/v2/oauth2/token'
 
     def __init__(
@@ -71,10 +70,9 @@ class TumblrTransferService(BaseTransferService):
         :raises: :class:`UnsupportedRequestException` if the request is unable to be
         made.
         """
-        dashboard_uri = urljoin(self._base_url, '/v2/user/dashboard')
         if count <= 20:
-            dashboard_response = self._get_resource(
-                dashboard_uri,
+            dashboard_response = self._get_resource_from_path(
+                'user/dashboard',
                 {
                     'limit': count,
                     'npf': True,

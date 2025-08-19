@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import Any, Iterable, Optional
+from urllib.parse import urljoin
 
 from requests import Response
 from requests_oauthlib import OAuth2Session
@@ -41,7 +42,7 @@ class BaseTransferService(ABC):
 
     _authorization_url: str
     _base_url: str
-    _client_secret: str
+    _client_secret: str | None
     _oAuth2Session: OAuth2Session
     _service_name: str
     _supported_verticals: set[Vertical] = set()
@@ -52,9 +53,9 @@ class BaseTransferService(ABC):
         self,
         service_name: str,
         client_id: str,
-        client_secret: str,
         redirect_uri: str,
         supported_verticals: set[Vertical],
+        client_secret: Optional[str] = None,
         state: Optional[str] = None,
         verticals: set[Vertical] = set(),
     ) -> None:
@@ -64,9 +65,9 @@ class BaseTransferService(ABC):
 
         :param service_name: Name of the service for which the transfer is being built.
         :param client_id: Client identifier given by the OAuth provider upon registration.
-        :param client_secret: The `client_secret` paired to the `client_id`.
         :param redirect_uri: The registered callback URI.
         :param supported_verticals: The `Vertical`s that can be fetched on the service.
+        :param client_secret: The `client_secret` paired to the `client_id`.
         :param state: State string used to prevent CSRF and identify flow.
         :param verticals: The `Vertical`s for which the transfer service has
         appropriate scope to fetch.
@@ -136,6 +137,40 @@ class BaseTransferService(ABC):
         if not response.ok:
             response.raise_for_status()
         return response
+
+    def _build_resource_url(self, path_suffix: str, base: Optional[str] = None) -> str:
+        """
+        Constructs the resource URL from a domain and path suffix.
+
+        :param path_suffix: the path to append to ``base``.
+        :param base: the prefix of the resource URL. If not given, defaults to
+        ``self._base_url``.
+
+        :returns: the complete resource URL.
+        """
+        if not base:
+            base = self._base_url
+        if not base.endswith('/'):
+            base += '/'
+
+        if path_suffix.startswith('/'):
+            path_suffix = path_suffix[1:]
+
+        return urljoin(base, path_suffix)
+
+    def _get_resource_from_path(
+        self, path_suffix: str, params: dict[str, Any] = {}
+    ) -> Response:
+        """
+        Sends a GET request to the endpoint URL built using ``endpoint_path``.
+
+        :param path_suffix: the path of the endpoint being accessed.
+        :param params: the extra parameters to be send with the request, optionally.
+
+        :returns: The :class:`requests.Response` object obtained from making the request.
+        """
+        resource_url = self._build_resource_url(path_suffix)
+        return self._get_resource(resource_url, params)
 
     def add_verticals(
         self, verticals: Iterable[Vertical], should_reauth: bool = False

@@ -1,5 +1,4 @@
 from typing import Any, Iterable, Optional, override
-from urllib.parse import urljoin
 
 from pardner.services.base import (
     BaseTransferService,
@@ -18,7 +17,7 @@ class StravaTransferService(BaseTransferService):
     """
 
     _authorization_url = 'https://www.strava.com/oauth/authorize'
-    _base_url = 'https://www.strava.com/'
+    _base_url = 'https://www.strava.com/api/v3/'
     _token_url = 'https://www.strava.com/oauth/token'
 
     def __init__(
@@ -85,12 +84,9 @@ class StravaTransferService(BaseTransferService):
         """
         max_count = 30
         if count <= max_count:
-            athlete_activities_uri = urljoin(
-                self._base_url, '/api/v3/athlete/activities'
-            )
             return list(
-                self._get_resource(
-                    athlete_activities_uri, params={'per_page': count, **request_params}
+                self._get_resource_from_path(
+                    'athlete/activities', params={'per_page': count, **request_params}
                 ).json()
             )
         raise UnsupportedRequestException(
