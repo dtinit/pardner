@@ -1,7 +1,7 @@
 from typing import Any, Iterable, Optional, override
 
+from pardner.exceptions import UnsupportedRequestException
 from pardner.services import BaseTransferService
-from pardner.services.base import UnsupportedRequestException
 from pardner.verticals import Vertical
 
 
@@ -50,9 +50,9 @@ class TumblrTransferService(BaseTransferService):
 
     def fetch_feed_posts(
         self,
+        request_params: dict[str, Any] = {},
         count: int = 20,
         text_only: bool = True,
-        request_params: dict[str, Any] = {},
     ) -> list[Any]:
         """
         Fetches posts from Tumblr feed for user account whose token was

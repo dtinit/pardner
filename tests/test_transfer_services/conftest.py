@@ -13,6 +13,18 @@ from pardner.verticals import Vertical
 
 
 @pytest.fixture
+def mock_nested_dict(mocker):
+    def nested_dict():
+        mock_dict = mocker.MagicMock(spec=dict, name='mock_nested_dict')
+        mock_dict.__getitem__.side_effect = lambda _: nested_dict()
+        mock_dict.get.side_effect = lambda _, default=None: nested_dict()
+        mock_dict.__contains__.side_effect = lambda _: True
+        return mock_dict
+
+    return nested_dict()
+
+
+@pytest.fixture
 def mock_oauth2_session_request(mocker):
     return mocker.patch('requests_oauthlib.OAuth2Session.request')
 
@@ -73,6 +85,23 @@ def mock_oauth2_bad_response(mocker):
 def mock_oauth2_session_get_bad_response(mocker, mock_oauth2_bad_response):
     oauth2_session_get = mocker.patch.object(OAuth2Session, 'get', autospec=True)
     oauth2_session_get.return_value = mock_oauth2_bad_response
+    return oauth2_session_get
+
+
+@pytest.fixture
+def mock_oauth2_good_response(mocker, mock_nested_dict):
+    mock_response = mocker.create_autospec(Response)
+    mock_response.ok = True
+    mock_response.status_code = 200
+    mock_response.url = 'fake url'
+    mock_response.json.return_value = mock_nested_dict
+    return mock_response
+
+
+@pytest.fixture
+def mock_oauth2_session_get_good_response(mocker, mock_oauth2_good_response):
+    oauth2_session_get = mocker.patch.object(OAuth2Session, 'get', autospec=True)
+    oauth2_session_get.return_value = mock_oauth2_good_response
     return oauth2_session_get
 
 

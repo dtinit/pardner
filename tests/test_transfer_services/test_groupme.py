@@ -1,6 +1,6 @@
 import pytest
 
-from pardner.services.base import UnsupportedRequestException
+from pardner.exceptions import UnsupportedRequestException
 from tests.test_transfer_services.conftest import mock_oauth2_session_get
 
 USER_ID = 'fake_user_id'

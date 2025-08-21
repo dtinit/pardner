@@ -5,33 +5,9 @@ from urllib.parse import urljoin
 from requests import Response
 from requests_oauthlib import OAuth2Session
 
+from pardner.exceptions import InsufficientScopeException, UnsupportedVerticalException
 from pardner.services.utils import scope_as_set, scope_as_string
 from pardner.verticals import Vertical
-
-
-class InsufficientScopeException(Exception):
-    def __init__(
-        self, unsupported_verticals: Iterable[Vertical], service_name: str
-    ) -> None:
-        combined_verticals = ' '.join(unsupported_verticals)
-        super().__init__(
-            f'Cannot add {combined_verticals} to {service_name} with current scope.'
-        )
-
-
-class UnsupportedVerticalException(Exception):
-    def __init__(
-        self, unsupported_verticals: Iterable[Vertical], service_name: str
-    ) -> None:
-        combined_verticals = ' '.join(unsupported_verticals)
-        super().__init__(
-            f'Cannot add {combined_verticals} to {service_name} because they are not supported.'
-        )
-
-
-class UnsupportedRequestException(Exception):
-    def __init__(self, service_name: str, message: str):
-        super().__init__(f'Cannot fetch data from {service_name}: {message}')
 
 
 class BaseTransferService(ABC):
@@ -118,10 +94,12 @@ class BaseTransferService(ABC):
         unsupported_verticals = [
             vertical
             for vertical in verticals
-            if vertical not in self._supported_verticals
+            if not self.is_vertical_supported(vertical)
         ]
         if len(unsupported_verticals) > 0:
-            raise UnsupportedVerticalException(unsupported_verticals, self.name)
+            raise UnsupportedVerticalException(
+                *unsupported_verticals, service_name=self.name
+            )
         self._verticals = set(verticals)
 
     def _get_resource(self, uri: str, params: dict[str, Any] = {}) -> Response:
@@ -192,7 +170,7 @@ class BaseTransferService(ABC):
         new_scopes = self.scope_for_verticals(new_verticals)
 
         if not new_scopes.issubset(self.scope) and not should_reauth:
-            raise InsufficientScopeException(verticals, self.name)
+            raise InsufficientScopeException(*verticals, service_name=self.name)
         elif not new_scopes.issubset(self.scope):
             self.verticals = new_verticals | self.verticals
             del self._oAuth2Session.access_token
@@ -201,6 +179,16 @@ class BaseTransferService(ABC):
 
         self.verticals = new_verticals | self.verticals
         return True
+
+    def is_vertical_supported(self, vertical: Vertical) -> bool:
+        """
+        Utility for indicating whether ``vertical`` is supported by the service or not.
+
+        :param vertical: the ``vertical`` from which validity is checked.
+
+        :returns: ``True`` if supported, ``False`` otherwise.
+        """
+        return vertical in self._supported_verticals
 
     def fetch_token(
         self,
@@ -252,3 +240,28 @@ class BaseTransferService(ABC):
         :returns: Scope names corresponding to `verticals`.
         """
         pass
+
+    def fetch(
+        self, vertical: Vertical, request_params: dict[str, Any] = {}, **params: Any
+    ) -> Any:
+        """
+        Generic method for fetching data of a specific vertical.
+
+        :param vertical: the :class:`Vertical` to fetch from the
+        service.
+        :param request_params: additional request parameters to be sent with the HTTP
+        request. Requires familiarity with the API of the service being used.
+        :param params: optional keyword arguments to be passed to the methods for
+        fetching ``vertical``.
+
+        :returns: the JSON response resulting from making the request.
+
+        :raises: :class:`UnsupportedVerticalException` if the vertical is not supported.
+        """
+        if not self.is_vertical_supported(vertical):
+            raise UnsupportedVerticalException(
+                vertical, service_name=self._service_name
+            )
+
+        method_name = f'fetch_{vertical.plural}'
+        getattr(self, method_name)(request_params=request_params, **params)
