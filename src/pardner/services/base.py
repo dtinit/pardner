@@ -42,10 +42,10 @@ class BaseTransferService(ABC):
         :param service_name: Name of the service for which the transfer is being built.
         :param client_id: Client identifier given by the OAuth provider upon registration.
         :param redirect_uri: The registered callback URI.
-        :param supported_verticals: The `Vertical`s that can be fetched on the service.
-        :param client_secret: The `client_secret` paired to the `client_id`.
+        :param supported_verticals: The :class:`Vertical`s that can be fetched on the service.
+        :param client_secret: The ``client_secret`` paired to the ``client_id``.
         :param state: State string used to prevent CSRF and identify flow.
-        :param verticals: The `Vertical`s for which the transfer service has
+        :param verticals: The :class:`Vertical`s for which the transfer service has
         appropriate scope to fetch.
         """
         self._client_secret = client_secret
@@ -74,7 +74,7 @@ class BaseTransferService(ABC):
         """
         Sets the scope of the transfer service flow.
         Some services have specific requirements for the format of the scope
-        string (e.g., scopes have to be comma separated, or `+` separated).
+        string (e.g., scopes have to be comma separated, or ``+`` separated).
 
         :param new_scope: The new scopes that should be set for the transfer
         service.
@@ -89,7 +89,7 @@ class BaseTransferService(ABC):
     def verticals(self, verticals: Iterable[Vertical]) -> None:
         """
         :raises: :class:`UnsupportedVerticalException`: if one or more of the
-        `verticals` are not supported by the service.
+        ``verticals`` are not supported by the service.
         """
         unsupported_verticals = [
             vertical
@@ -156,14 +156,14 @@ class BaseTransferService(ABC):
         """
         Adds to the verticals being requested.
 
-        :param verticals: `Vertical`s that should be added to service.
+        :param verticals: :class:`Vertical`s that should be added to service.
         :param should_reauth: Whether or not the service should unauthorize itself to
-        start a new session with added scopes corresponding to `verticals`.
+        start a new session with added scopes corresponding to ``verticals``.
 
-        :returns: Whether add was successful without reauthorization (`True`) or not
-        (`False`).
+        :returns: Whether add was successful without reauthorization (``True``) or not
+        (``False``).
 
-        :raises: :class:`UnsupportedVerticalException`: if `should_reauth` is not
+        :raises: :class:`UnsupportedVerticalException`: if ``should_reauth`` is not
         passed and the current scopes are insufficient, this exception is raised.
         """
         new_verticals = set(verticals) - self.verticals
@@ -198,11 +198,11 @@ class BaseTransferService(ABC):
     ) -> dict[str, Any]:
         """
         Once the end-user authorizes the application to access their data, the
-        resource server sends a request to `redirect_uri` with the authorization code as
+        resource server sends a request to ``redirect_uri`` with the authorization code as
         a parameter. Using this authorization code, this method makes a request to the
         resource server to obtain the access token.
 
-        One of either `code` or `authorization_response` must not be None.
+        One of either ``code`` or ``authorization_response`` must not be None.
 
         :param code: the code obtained from parsing the callback URL which the end-user's
         browser redirected to.
@@ -237,7 +237,7 @@ class BaseTransferService(ABC):
 
         :param verticals: The verticals for which scopes are being requested.
 
-        :returns: Scope names corresponding to `verticals`.
+        :returns: Scope names corresponding to ``verticals``.
         """
         pass
 
