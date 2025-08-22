@@ -1,10 +1,7 @@
 from typing import Any, Iterable, Optional, override
 
-from pardner.services.base import (
-    BaseTransferService,
-    UnsupportedRequestException,
-    UnsupportedVerticalException,
-)
+from pardner.exceptions import UnsupportedRequestException, UnsupportedVerticalException
+from pardner.services import BaseTransferService
 from pardner.services.utils import scope_as_set, scope_as_string
 from pardner.verticals import Vertical
 
@@ -59,14 +56,16 @@ class StravaTransferService(BaseTransferService):
     def scope_for_verticals(self, verticals: Iterable[Vertical]) -> set[str]:
         sub_scopes: set[str] = set()
         for vertical in verticals:
-            if vertical not in self._supported_verticals:
-                raise UnsupportedVerticalException([vertical], self._service_name)
+            if not self.is_vertical_supported(vertical):
+                raise UnsupportedVerticalException(
+                    vertical, service_name=self._service_name
+                )
             if vertical == Vertical.PhysicalActivity:
                 sub_scopes.update(['activity:read', 'profile:read_all'])
         return sub_scopes
 
-    def fetch_athlete_activities(
-        self, count: int = 30, request_params: dict[str, Any] = {}
+    def fetch_physical_activities(
+        self, request_params: dict[str, Any] = {}, count: int = 30
     ) -> list[Any]:
         """
         Fetches and returns activities completed by the authorized user.

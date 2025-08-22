@@ -6,7 +6,8 @@ from oauthlib.oauth2 import MobileApplicationClient
 from requests import Response
 from requests_oauthlib import OAuth2Session
 
-from pardner.services.base import BaseTransferService, UnsupportedRequestException
+from pardner.exceptions import UnsupportedRequestException
+from pardner.services import BaseTransferService
 from pardner.verticals import Vertical
 
 
@@ -113,24 +114,28 @@ class GroupMeTransferService(BaseTransferService):
         # GroupMe does not require scope
         return set()
 
-    def fetch_user_data(self) -> Any:
+    def fetch_user_data(self, request_params: dict[str, Any] = {}) -> Any:
         """
         Fetches user identifiers and profile data. Also sets ``self._user_id``, which
         is necessary for most requests.
 
         :returns: user identifiers and profile data in dictionary format.
         """
-        user_data = self._get_resource_from_path('users/me').json().get('response')
+        user_data = (
+            self._get_resource_from_path('users/me', request_params)
+            .json()
+            .get('response')
+        )
         self._user_id = user_data['id']
         return user_data
 
-    def fetch_blocked_users(self) -> Any:
+    def fetch_blocked_users(self, request_params: dict[str, Any] = {}) -> Any:
         """
         Sends a GET request to fetch the users blocked by the authenticated user.
 
         :returns: a JSON object with the result of the request.
         """
-        blocked_users = self._fetch_resource_common('blocks')
+        blocked_users = self._fetch_resource_common('blocks', request_params)
 
         if 'blocks' not in blocked_users:
             raise ValueError(
@@ -139,15 +144,17 @@ class GroupMeTransferService(BaseTransferService):
 
         return blocked_users['blocks']
 
-    def fetch_chat_bots(self) -> Any:
+    def fetch_chat_bots(self, request_params: dict[str, Any] = {}) -> Any:
         """
         Sends a GET request to fetch the chat bots created by the authenticated user.
 
         :returns: a JSON object with the result of the request.
         """
-        return self._fetch_resource_common('bots')
+        return self._fetch_resource_common('bots', request_params)
 
-    def fetch_conversations_direct(self, count: int = 10) -> Any:
+    def fetch_conversations_direct(
+        self, request_params: dict[str, Any] = {}, count: int = 10
+    ) -> Any:
         """
         Sends a GET request to fetch the conversations the authenticated user is a part
         of with only one other member (i.e., a direct message). The response will
@@ -159,13 +166,17 @@ class GroupMeTransferService(BaseTransferService):
         :returns: a JSON object with the result of the request.
         """
         if count <= 10:
-            return self._fetch_resource_common('chats', params={'per_page': count})
+            return self._fetch_resource_common(
+                'chats', params={**request_params, 'per_page': count}
+            )
         raise UnsupportedRequestException(
             self._service_name,
             'can only make a request for at most 10 direct conversations at a time.',
         )
 
-    def fetch_conversations_group(self, count: int = 10) -> Any:
+    def fetch_conversations_group(
+        self, request_params: dict[str, Any] = {}, count: int = 10
+    ) -> Any:
         """
         Sends a GET request to fetch the group conversations the authenticated user is
         a part of. The response will include metadata associated with the conversation,
@@ -176,7 +187,9 @@ class GroupMeTransferService(BaseTransferService):
         :returns: a JSON object with the result of the request.
         """
         if count <= 10:
-            return self._fetch_resource_common('groups', params={'per_page': count})
+            return self._fetch_resource_common(
+                'groups', params={**request_params, 'per_page': count}
+            )
         raise UnsupportedRequestException(
             self._service_name,
             'can only make a request for at most 10 group conversations at a time.',

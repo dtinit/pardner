@@ -1,7 +1,7 @@
 import pytest
 from requests import HTTPError
 
-from pardner.services.base import UnsupportedRequestException
+from pardner.exceptions import UnsupportedRequestException
 from pardner.verticals import Vertical
 from tests.test_transfer_services.conftest import mock_oauth2_session_get
 
