@@ -59,11 +59,11 @@ class TumblrTransferService(BaseTransferService):
         obtained using the Tumblr API.
 
         :param count: number of posts to request.
-        :param text_only: whether or not to request only text-based posts (`True`) or
-        not (`False).
+        :param text_only: whether or not to request only text-based posts (``True``) or
+        not (``False``).
         :param request_params: any other endpoint-specific parameters to be sent
         to the endpoint. Depending on the parameters passed, this could override
-        `count` and `text_only`.
+        ``count`` and ``text_only``.
 
         :returns: a list of dictionary objects with information for the posts in a feed.
 

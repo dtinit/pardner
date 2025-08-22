@@ -6,10 +6,12 @@ def scope_as_string(scopes: Any, delimiter: str = ' ') -> str | None:
     Converts a sequence of individual scopes into a single scope string.
 
     :param scopes: a sequence of scopes as strings or a scope string.
-    :param delimiter: the string used to separate individual scopes. Defaults to single space.
+    :param delimiter: the string used to separate individual scopes. Defaults to single
+    space.
 
     :returns: a string containing all scopes.
-    :raises :class:ValueError: if `scopes` is neither a string nor a sequence of strings
+    :raises :class:ValueError: if ``scopes`` is neither a string nor a sequence of
+    strings.
     """
     if isinstance(scopes, str) or scopes is None:
         return scopes
@@ -23,7 +25,8 @@ def scope_as_set(scope: Any, delimiter: str = ' ') -> set[str]:
     Splits a scope with potentially more than one scope into a set of scopes.
 
     :param scope: a string with one or more scopes.
-    :param delimiter: the string used to separate individual scopes. Defaults to single space.
+    :param delimiter: the string used to separate individual scopes. Defaults to
+    single space.
 
     :returns: a set of scopes.
     """
