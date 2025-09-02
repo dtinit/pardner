@@ -31,7 +31,7 @@ class GroupMeTransferService(BaseTransferService):
     _authorization_url = 'https://oauth.groupme.com/oauth/authorize'
     _base_url = 'https://api.groupme.com/v3/'
     _token_url = 'https://oauth.groupme.com/oauth/authorize'
-    _user_id: str | None
+    _user_id: str | None = None
 
     def __init__(
         self, client_id: str, redirect_uri: str, verticals: set[Vertical] = set()
