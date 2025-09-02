@@ -59,28 +59,28 @@ def test_fetch_user_data(mocker, mock_groupme_transfer_service):
     ],
     [
         (
-            'fetch_blocked_users',
+            'fetch_blocked_user_vertical',
             {'response': {'blocks': FAKE_LIST_RESPONSE}},
             'https://api.groupme.com/v3/blocks',
             {},
             FAKE_LIST_RESPONSE,
         ),
         (
-            'fetch_chat_bots',
+            'fetch_chat_bot_vertical',
             {'response': FAKE_LIST_RESPONSE},
             'https://api.groupme.com/v3/bots',
             {},
             FAKE_LIST_RESPONSE,
         ),
         (
-            'fetch_conversations_direct',
+            'fetch_conversation_direct_vertical',
             {'response': FAKE_LIST_RESPONSE},
             'https://api.groupme.com/v3/chats',
             {'per_page': 10},
             FAKE_LIST_RESPONSE,
         ),
         (
-            'fetch_conversations_group',
+            'fetch_conversation_group_vertical',
             {'response': FAKE_LIST_RESPONSE},
             'https://api.groupme.com/v3/groups',
             {'per_page': 10},
@@ -112,7 +112,8 @@ def test_fetch_vertical(
 
 
 @pytest.mark.parametrize(
-    'method_name', ['fetch_conversations_direct', 'fetch_conversations_group']
+    'method_name',
+    ['fetch_conversation_direct_vertical', 'fetch_conversation_group_vertical'],
 )
 def test_fetch_conversations_raises_exception(
     method_name, mock_groupme_transfer_service
@@ -142,4 +143,4 @@ def test_fetch_blocked_users_raises_exception(mock_groupme_transfer_service, moc
     response_object.json.return_value = {'response': {'no_blocks': []}}
     mock_oauth2_session_get(mocker, response_object)
     with pytest.raises(ValueError):
-        mock_groupme_transfer_service.fetch_blocked_users()
+        mock_groupme_transfer_service.fetch_blocked_user_vertical()

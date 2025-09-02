@@ -263,5 +263,5 @@ class BaseTransferService(ABC):
                 vertical, service_name=self._service_name
             )
 
-        method_name = f'fetch_{vertical.plural}'
+        method_name = f'fetch_{vertical.vertical_name}_vertical'
         getattr(self, method_name)(request_params=request_params, **params)

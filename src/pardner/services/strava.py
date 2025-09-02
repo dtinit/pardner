@@ -3,7 +3,7 @@ from typing import Any, Iterable, Optional, override
 from pardner.exceptions import UnsupportedRequestException, UnsupportedVerticalException
 from pardner.services import BaseTransferService
 from pardner.services.utils import scope_as_set, scope_as_string
-from pardner.verticals import Vertical
+from pardner.verticals import PhysicalActivityVertical, Vertical
 
 
 class StravaTransferService(BaseTransferService):
@@ -31,7 +31,7 @@ class StravaTransferService(BaseTransferService):
             client_secret=client_secret,
             redirect_uri=redirect_uri,
             state=state,
-            supported_verticals={Vertical.PhysicalActivity},
+            supported_verticals={PhysicalActivityVertical},
             verticals=verticals,
         )
 
@@ -60,11 +60,11 @@ class StravaTransferService(BaseTransferService):
                 raise UnsupportedVerticalException(
                     vertical, service_name=self._service_name
                 )
-            if vertical == Vertical.PhysicalActivity:
+            if vertical == PhysicalActivityVertical:
                 sub_scopes.update(['activity:read', 'profile:read_all'])
         return sub_scopes
 
-    def fetch_physical_activities(
+    def fetch_physical_activity_vertical(
         self, request_params: dict[str, Any] = {}, count: int = 30
     ) -> list[Any]:
         """

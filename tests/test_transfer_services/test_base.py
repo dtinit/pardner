@@ -7,7 +7,8 @@ from pardner.services import (
     InsufficientScopeException,
     UnsupportedVerticalException,
 )
-from pardner.verticals import Vertical
+from pardner.verticals import SocialPostingVertical
+from tests.test_transfer_services.conftest import ExtraScopeVertical, NewVertical
 
 SAMPLE_SCOPE = {'fake', 'scope'}
 SAMPLE_BASE_URL = 'https://api.example.com/v1'
@@ -30,51 +31,51 @@ class FakeTransferService(BaseTransferService):
         )
 
     def scope_for_verticals(self, verticals):
-        if Vertical.NEW_VERTICAL_EXTRA_SCOPE in verticals:
+        if ExtraScopeVertical in verticals:
             return SAMPLE_SCOPE | {'extra_scope'}
         return SAMPLE_SCOPE
 
 
 @pytest.fixture
 def blank_transfer_service(monkeypatch):
-    return FakeTransferService([Vertical.FeedPost], [])
+    return FakeTransferService([SocialPostingVertical], [])
 
 
-def test_add_verticals_raises_exception(mock_vertical, blank_transfer_service):
+def test_add_verticals_raises_exception(blank_transfer_service):
     with pytest.raises(InsufficientScopeException):
-        blank_transfer_service.add_verticals([Vertical.NEW_VERTICAL_EXTRA_SCOPE])
+        blank_transfer_service.add_verticals([ExtraScopeVertical])
 
 
-def test_set_verticals_raises_exception(mock_vertical, blank_transfer_service):
+def test_set_verticals_raises_exception(blank_transfer_service):
     with pytest.raises(UnsupportedVerticalException):
-        blank_transfer_service.verticals = [Vertical.NEW_VERTICAL]
+        blank_transfer_service.verticals = [NewVertical]
 
 
 @pytest.fixture
-def mock_transfer_service(mock_vertical):
+def mock_transfer_service():
     mock_transfer_service = FakeTransferService(
-        [Vertical.FeedPost, Vertical.NEW_VERTICAL, Vertical.NEW_VERTICAL_EXTRA_SCOPE],
-        [Vertical.FeedPost],
+        [SocialPostingVertical, NewVertical, ExtraScopeVertical],
+        [SocialPostingVertical],
     )
     mock_transfer_service.scope = SAMPLE_SCOPE
     return mock_transfer_service
 
 
-def test_set_supported_verticals(mock_vertical, mock_transfer_service):
-    mock_transfer_service.verticals = [Vertical.NEW_VERTICAL]
-    assert mock_transfer_service.verticals == {Vertical.NEW_VERTICAL}
+def test_set_supported_verticals(mock_transfer_service):
+    mock_transfer_service.verticals = [NewVertical]
+    assert mock_transfer_service.verticals == {NewVertical}
 
 
-def test_add_supported_verticals(mock_vertical, mock_transfer_service):
-    assert mock_transfer_service.add_verticals([Vertical.NEW_VERTICAL])
-    assert mock_transfer_service.verticals == {Vertical.FeedPost, Vertical.NEW_VERTICAL}
+def test_add_supported_verticals(mock_transfer_service):
+    assert mock_transfer_service.add_verticals([NewVertical])
+    assert mock_transfer_service.verticals == {SocialPostingVertical, NewVertical}
 
 
 def test_add_unsupported_vertical_new_scope_required(
-    monkeypatch, mock_vertical, mock_transfer_service
+    monkeypatch, mock_transfer_service
 ):
     def _mock_scope_for_verticals(verticals):
-        if Vertical.NEW_VERTICAL_EXTRA_SCOPE in verticals:
+        if ExtraScopeVertical in verticals:
             return {'new_scope'}
         return SAMPLE_SCOPE
 
@@ -83,13 +84,13 @@ def test_add_unsupported_vertical_new_scope_required(
         mock_transfer_service, 'scope_for_verticals', _mock_scope_for_verticals
     )
     assert not mock_transfer_service.add_verticals(
-        [Vertical.NEW_VERTICAL_EXTRA_SCOPE], should_reauth=True
+        [ExtraScopeVertical], should_reauth=True
     )
     assert not mock_transfer_service._oAuth2Session.access_token
     assert mock_transfer_service.scope == {'fake', 'scope', 'new_scope'}
     assert mock_transfer_service.verticals == {
-        Vertical.FeedPost,
-        Vertical.NEW_VERTICAL_EXTRA_SCOPE,
+        SocialPostingVertical,
+        ExtraScopeVertical,
     }
 
 
