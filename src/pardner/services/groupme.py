@@ -8,7 +8,13 @@ from requests_oauthlib import OAuth2Session
 
 from pardner.exceptions import UnsupportedRequestException
 from pardner.services import BaseTransferService
-from pardner.verticals import Vertical
+from pardner.verticals import (
+    BlockedUserVertical,
+    ChatBotVertical,
+    ConversationDirectVertical,
+    ConversationGroupVertical,
+    Vertical,
+)
 
 
 class GroupMeTransferService(BaseTransferService):
@@ -35,10 +41,10 @@ class GroupMeTransferService(BaseTransferService):
             client_id=client_id,
             redirect_uri=redirect_uri,
             supported_verticals={
-                Vertical.BlockedUser,
-                Vertical.ChatBot,
-                Vertical.ConversationDirect,
-                Vertical.ConversationGroup,
+                BlockedUserVertical,
+                ChatBotVertical,
+                ConversationDirectVertical,
+                ConversationGroupVertical,
             },
             verticals=verticals,
         )
@@ -129,7 +135,7 @@ class GroupMeTransferService(BaseTransferService):
         self._user_id = user_data['id']
         return user_data
 
-    def fetch_blocked_users(self, request_params: dict[str, Any] = {}) -> Any:
+    def fetch_blocked_user_vertical(self, request_params: dict[str, Any] = {}) -> Any:
         """
         Sends a GET request to fetch the users blocked by the authenticated user.
 
@@ -144,7 +150,7 @@ class GroupMeTransferService(BaseTransferService):
 
         return blocked_users['blocks']
 
-    def fetch_chat_bots(self, request_params: dict[str, Any] = {}) -> Any:
+    def fetch_chat_bot_vertical(self, request_params: dict[str, Any] = {}) -> Any:
         """
         Sends a GET request to fetch the chat bots created by the authenticated user.
 
@@ -152,7 +158,7 @@ class GroupMeTransferService(BaseTransferService):
         """
         return self._fetch_resource_common('bots', request_params)
 
-    def fetch_conversations_direct(
+    def fetch_conversation_direct_vertical(
         self, request_params: dict[str, Any] = {}, count: int = 10
     ) -> Any:
         """
@@ -174,7 +180,7 @@ class GroupMeTransferService(BaseTransferService):
             'can only make a request for at most 10 direct conversations at a time.',
         )
 
-    def fetch_conversations_group(
+    def fetch_conversation_group_vertical(
         self, request_params: dict[str, Any] = {}, count: int = 10
     ) -> Any:
         """

@@ -7,7 +7,24 @@ from pardner.services import (
     StravaTransferService,
     TumblrTransferService,
 )
-from pardner.verticals import Vertical
+from pardner.verticals import (
+    BlockedUserVertical,
+    ConversationDirectVertical,
+    PhysicalActivityVertical,
+    SocialPostingVertical,
+)
+from pardner.verticals.base import BaseVertical
+
+# CLASSES
+
+
+class NewVertical(BaseVertical):
+    vertical_name: str = 'new_vertical'
+
+
+class ExtraScopeVertical(BaseVertical):
+    vertical_name: str = 'extra_scope_vertical'
+
 
 # FIXTURES
 
@@ -37,20 +54,14 @@ def mock_oauth2_session_response(mocker):
 
 
 @pytest.fixture
-def mock_vertical():
-    Vertical.NEW_VERTICAL = 'new_vertical'
-    Vertical.NEW_VERTICAL_EXTRA_SCOPE = 'new_vertical_unsupported'
-
-
-@pytest.fixture
-def mock_tumblr_transfer_service(verticals=[Vertical.FeedPost]):
+def mock_tumblr_transfer_service(verticals=[SocialPostingVertical]):
     return TumblrTransferService(
         'fake_client_id', 'fake_client_secret', 'https://redirect_uri', None, verticals
     )
 
 
 @pytest.fixture
-def mock_strava_transfer_service(verticals=[Vertical.PhysicalActivity]):
+def mock_strava_transfer_service(verticals=[PhysicalActivityVertical]):
     return StravaTransferService(
         'fake_client_id', 'fake_client_secret', 'https://redirect_uri', None, verticals
     )
@@ -58,7 +69,7 @@ def mock_strava_transfer_service(verticals=[Vertical.PhysicalActivity]):
 
 @pytest.fixture
 def mock_groupme_transfer_service(
-    verticals=[Vertical.BlockedUser, Vertical.ConversationDirect],
+    verticals=[BlockedUserVertical, ConversationDirectVertical],
 ):
     groupme = GroupMeTransferService(
         client_id='fake_client_id',

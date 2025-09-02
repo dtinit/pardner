@@ -2,7 +2,7 @@ from typing import Any, Iterable, Optional, override
 
 from pardner.exceptions import UnsupportedRequestException
 from pardner.services import BaseTransferService
-from pardner.verticals import Vertical
+from pardner.verticals import SocialPostingVertical, Vertical
 
 
 class TumblrTransferService(BaseTransferService):
@@ -30,7 +30,7 @@ class TumblrTransferService(BaseTransferService):
             client_secret=client_secret,
             redirect_uri=redirect_uri,
             state=state,
-            supported_verticals={Vertical.FeedPost},
+            supported_verticals={SocialPostingVertical},
             verticals=verticals,
         )
 
@@ -48,7 +48,7 @@ class TumblrTransferService(BaseTransferService):
     ) -> dict[str, Any]:
         return super().fetch_token(code, authorization_response, include_client_id)
 
-    def fetch_feed_posts(
+    def fetch_social_posting_vertical(
         self,
         request_params: dict[str, Any] = {},
         count: int = 20,
