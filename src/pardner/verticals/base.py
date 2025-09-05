@@ -1,3 +1,4 @@
+import uuid
 from abc import ABC
 from datetime import datetime
 from typing import Type
@@ -12,7 +13,7 @@ class BaseVertical(BaseModel, ABC):
     supported by every transfer service.
     """
 
-    id: str
+    id: str = Field(default_factory=lambda: uuid.uuid4().hex)
     creator_user_id: str
     service: str = Field(
         description='The name of the service the data was pulled from.'
