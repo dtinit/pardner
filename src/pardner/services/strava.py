@@ -3,14 +3,11 @@ from datetime import datetime, timedelta
 from typing import Any, Iterable, Literal, Optional, override
 from urllib.parse import urljoin
 
-from pydantic import AnyHttpUrl
-
 from pardner.exceptions import UnsupportedRequestException, UnsupportedVerticalException
 from pardner.services import BaseTransferService
 from pardner.services.utils import scope_as_set, scope_as_string
-from pardner.verticals import PhysicalActivityVertical, Vertical
-from pardner.verticals.social_posting import SocialPostingVertical
-from pardner.verticals.sub_verticals.associated_media import AssociatedMediaSubVertical
+from pardner.verticals import PhysicalActivityVertical, SocialPostingVertical, Vertical
+from pardner.verticals.sub_verticals import AssociatedMediaSubVertical
 
 
 class StravaTransferService(BaseTransferService):
@@ -121,7 +118,7 @@ class StravaTransferService(BaseTransferService):
             creator_user_id=str(raw_data_dict['athlete'].get('id')),
             service=self._service_name,
             created_at=created_at,
-            url=AnyHttpUrl(url_str),
+            url=url_str,
             associated_media=associated_media_list,
             interaction_count=interaction_count,
             status=status,

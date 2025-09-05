@@ -36,6 +36,7 @@ warn_return_any = true
 strict_optional = true
 disallow_incomplete_defs = true
 exclude = ["tests"]
+plugins = ['pydantic.mypy']
 
 [tool.ruff]
 line-length = 88
