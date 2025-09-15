@@ -191,9 +191,7 @@ class GroupMeTransferService(BaseTransferService):
         if not isinstance(raw_data, dict):
             return None
         raw_data_dict = defaultdict(dict, raw_data)
-
         user_id = raw_data_dict.get('user_id', self._user_id)
-
         return ChatBotVertical(
             service=self._service_name,
             service_object_id=raw_data_dict.get('bot_id'),

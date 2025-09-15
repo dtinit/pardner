@@ -83,12 +83,12 @@ additional ✓ (as in the [Quickstart example](#quickstart-example) above).
 
 |                    | GroupMe | Strava | Tumblr |
 | ------------------ | ------- | ------ | ------ |
-| BlockedUser        | ✓       |        | 👀     |
-| ChatBot            | ✓       |        |        |
-| ConversationDirect | ✓       |        |        |
-| ConversationGroup  | ✓       |        |        |
+| BlockedUser        | ✓✓      |        | 👀     |
+| ChatBot            | ✓✓      |        |        |
+| ConversationDirect | ✓✓      |        |        |
+| ConversationGroup  | ✓✓      |        |        |
 | Message            |         |        |        |
-| PhysicalActivity   |         | ✓      |        |
+| PhysicalActivity   |         | ✓✓     |        |
 | SocialPosting      |         | ✓✓     | ✓      |
 
 The transfer services are defined in
