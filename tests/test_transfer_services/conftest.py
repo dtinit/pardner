@@ -54,14 +54,14 @@ def mock_oauth2_session_response(mocker):
 
 
 @pytest.fixture
-def mock_tumblr_transfer_service(verticals=[SocialPostingVertical]):
+def tumblr_transfer_service(verticals=[SocialPostingVertical]):
     return TumblrTransferService(
         'fake_client_id', 'fake_client_secret', 'https://redirect_uri', None, verticals
     )
 
 
 @pytest.fixture
-def mock_strava_transfer_service(verticals=[PhysicalActivityVertical]):
+def strava_transfer_service(verticals=[PhysicalActivityVertical]):
     return StravaTransferService(
         'fake_client_id', 'fake_client_secret', 'https://redirect_uri', None, verticals
     )

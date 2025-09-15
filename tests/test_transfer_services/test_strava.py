@@ -13,36 +13,36 @@ from tests.test_transfer_services.conftest import (
 )
 
 
-def test_scope(mock_strava_transfer_service):
-    mock_strava_transfer_service.scope == 'activity:read,profile:read_all'
+def test_scope(strava_transfer_service):
+    strava_transfer_service.scope == 'activity:read,profile:read_all'
 
 
 @pytest.mark.parametrize(
     ['verticals', 'expected_scope'],
     [([], set()), ([PhysicalActivityVertical], {'activity:read', 'profile:read_all'})],
 )
-def test_scope_for_verticals(mock_strava_transfer_service, verticals, expected_scope):
-    assert mock_strava_transfer_service.scope_for_verticals(verticals) == expected_scope
+def test_scope_for_verticals(strava_transfer_service, verticals, expected_scope):
+    assert strava_transfer_service.scope_for_verticals(verticals) == expected_scope
 
 
-def test_scope_for_verticals_raises_error(mock_strava_transfer_service):
+def test_scope_for_verticals_raises_error(strava_transfer_service):
     with pytest.raises(UnsupportedVerticalException):
-        mock_strava_transfer_service.scope_for_verticals([NewVertical])
+        strava_transfer_service.scope_for_verticals([NewVertical])
 
 
-def test_fetch_physical_activity_raises_exception(mock_strava_transfer_service):
+def test_fetch_physical_activity_raises_exception(strava_transfer_service):
     with pytest.raises(UnsupportedRequestException):
-        mock_strava_transfer_service.fetch_physical_activity_vertical(count=31)
+        strava_transfer_service.fetch_physical_activity_vertical(count=31)
 
 
 def test_fetch_physical_activity_vertical_raises_http_exception(
-    mock_strava_transfer_service, mock_oauth2_session_get_bad_response
+    strava_transfer_service, mock_oauth2_session_get_bad_response
 ):
     with pytest.raises(HTTPError):
-        mock_strava_transfer_service.fetch_physical_activity_vertical()
+        strava_transfer_service.fetch_physical_activity_vertical()
 
 
-def test_fetch_physical_activity_vertical(mocker, mock_strava_transfer_service):
+def test_fetch_physical_activity_vertical(mocker, strava_transfer_service):
     # Adapted from
     # https://developers.strava.com/docs/reference/#api-Activities-getLoggedInAthleteActivities
     sample_response = [
@@ -169,7 +169,7 @@ def test_fetch_physical_activity_vertical(mocker, mock_strava_transfer_service):
 
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
 
-    model_objs, _ = mock_strava_transfer_service.fetch_physical_activity_vertical()
+    model_objs, _ = strava_transfer_service.fetch_physical_activity_vertical()
     model_obj_dumps = dump_and_filter_model_objs(model_objs)
 
     assert (
