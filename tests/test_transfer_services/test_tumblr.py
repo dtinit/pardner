@@ -10,29 +10,29 @@ from tests.test_transfer_services.conftest import mock_oauth2_session_get
     ['verticals', 'expected_scope'],
     [([], {'basic'}), ([SocialPostingVertical, {'basic'}])],
 )
-def test_scope_for_vertical(mock_tumblr_transfer_service, verticals, expected_scope):
-    assert mock_tumblr_transfer_service.scope_for_verticals(verticals) == expected_scope
+def test_scope_for_vertical(tumblr_transfer_service, verticals, expected_scope):
+    assert tumblr_transfer_service.scope_for_verticals(verticals) == expected_scope
 
 
-def test_fetch_social_posting_vertical_raises_exception(mock_tumblr_transfer_service):
+def test_fetch_social_posting_vertical_raises_exception(tumblr_transfer_service):
     with pytest.raises(UnsupportedRequestException):
-        mock_tumblr_transfer_service.fetch_social_posting_vertical(count=21)
+        tumblr_transfer_service.fetch_social_posting_vertical(count=21)
 
 
 def test_fetch_social_posting_vertical_raises_http_exception(
-    mock_tumblr_transfer_service, mock_oauth2_session_get_bad_response
+    tumblr_transfer_service, mock_oauth2_session_get_bad_response
 ):
     with pytest.raises(HTTPError):
-        mock_tumblr_transfer_service.fetch_social_posting_vertical()
+        tumblr_transfer_service.fetch_social_posting_vertical()
 
 
-def test_fetch_social_posting_vertical(mocker, mock_tumblr_transfer_service):
+def test_fetch_social_posting_vertical(mocker, tumblr_transfer_service):
     response_object = mocker.MagicMock()
     response_object.json.return_value = {'response': {'posts': ['sample', 'posts']}}
 
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
 
-    assert mock_tumblr_transfer_service.fetch_social_posting_vertical() == [
+    assert tumblr_transfer_service.fetch_social_posting_vertical() == [
         'sample',
         'posts',
     ]
