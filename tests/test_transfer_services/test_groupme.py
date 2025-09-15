@@ -437,9 +437,8 @@ def test_fetch_conversation_group_vertical(groupme_transfer_service, mocker):
             'created_at': datetime(2011, 4, 12, 15, 48, 48, tzinfo=timezone.utc),
             'associated_media': [
                 {
-                    'audio_url': None,
-                    'image_url': AnyHttpUrl('https://i.groupme.com/123456789'),
-                    'video_url': None,
+                    'media_type': 'image',
+                    'url': AnyHttpUrl('https://i.groupme.com/123456789'),
                 }
             ],
             'is_private': True,

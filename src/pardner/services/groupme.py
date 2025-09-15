@@ -302,7 +302,9 @@ class GroupMeTransferService(BaseTransferService):
         associated_media = []
         image_url = raw_data_dict.get('image_url', None)
         if image_url:
-            associated_media = [AssociatedMediaSubVertical(image_url=image_url)]
+            associated_media = [
+                AssociatedMediaSubVertical(media_type='image', url=image_url)
+            ]
 
         is_private = None
         conversation_type = raw_data_dict.get('type')

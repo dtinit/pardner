@@ -112,7 +112,7 @@ class StravaTransferService(BaseTransferService):
                 raw_data_dict['photos'].get('primary', {}).get('urls', {}).values()
             )
             associated_media_list = [
-                AssociatedMediaSubVertical(image_url=photo_url)
+                AssociatedMediaSubVertical(media_type='image', url=photo_url)
                 for photo_url in photo_urls
             ]
 
