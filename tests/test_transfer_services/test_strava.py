@@ -6,7 +6,11 @@ from requests import HTTPError
 
 from pardner.exceptions import UnsupportedRequestException, UnsupportedVerticalException
 from pardner.verticals.physical_activity import PhysicalActivityVertical
-from tests.test_transfer_services.conftest import NewVertical, mock_oauth2_session_get
+from tests.test_transfer_services.conftest import (
+    NewVertical,
+    dump_and_filter_model_objs,
+    mock_oauth2_session_get,
+)
 
 
 def test_scope(mock_strava_transfer_service):
@@ -51,7 +55,7 @@ def test_fetch_physical_activity_vertical(mocker, mock_strava_transfer_service):
             'elapsed_time': 4500,
             'total_elevation_gain': 0,
             'type': 'Ride',
-            'sport_type': 'MountainBikeRide',
+            'sport_type': 'Hike',
             'workout_type': None,
             'id': 154504250376823,
             'external_id': 'garmin_push_12345678987654321',
@@ -166,86 +170,80 @@ def test_fetch_physical_activity_vertical(mocker, mock_strava_transfer_service):
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
 
     model_objs, _ = mock_strava_transfer_service.fetch_physical_activity_vertical()
-    model_obj1, model_obj2 = model_objs
+    model_obj_dumps = dump_and_filter_model_objs(model_objs)
 
     assert (
         oauth2_session_get.call_args.args[1]
         == 'https://www.strava.com/api/v3/athlete/activities'
     )
 
-    model_obj1_json = model_obj1.model_dump()
-    del model_obj1_json['pardner_object_id']
-
-    assert model_obj1_json == {
-        'service_object_id': '154504250376823',
-        'creator_user_id': '134815',
-        'data_owner_id': '134815',
+    base_model_dict = {
         'service': 'Strava',
         'vertical_name': 'physical_activity',
-        'created_at': datetime.datetime(2018, 5, 2, 12, 15, 9),
-        'url': AnyHttpUrl('https://www.strava.com/activities/154504250376823'),
-        'abstract': None,
-        'associated_media': [
-            {
-                'audio_url': None,
-                'image_url': AnyHttpUrl('https://url1.com/'),
-                'video_url': None,
-            },
-            {
-                'audio_url': None,
-                'image_url': AnyHttpUrl('https://url2.com/'),
-                'video_url': None,
-            },
-        ],
-        'interaction_count': 4,
-        'keywords': [],
-        'shared_content': [],
-        'status': 'restricted',
-        'text': 'mock description',
-        'title': 'Happy Friday',
-        'activity_type': 'MountainBikeRide',
-        'distance': 24931.4,
-        'elevation_high': None,
-        'elevation_low': None,
-        'kilocalories': 870.2,
-        'max_speed': 11.0,
-        'start_datetime': datetime.datetime(2018, 5, 2, 12, 15, 9),
-        'start_latitude': 41.41,
-        'start_longitude': -41.41,
-        'end_datetime': datetime.datetime(2018, 5, 2, 13, 30, 9),
-        'end_latitude': 42.42,
-        'end_longitude': -42.42,
-    }
-
-    model_obj2_json = model_obj2.model_dump()
-    del model_obj2_json['pardner_object_id']
-
-    assert model_obj2_json == {
-        'service_object_id': '1234567809',
-        'creator_user_id': '167560',
-        'data_owner_id': '167560',
-        'service': 'Strava',
-        'vertical_name': 'physical_activity',
-        'created_at': datetime.datetime(2018, 4, 30, 12, 35, 51),
-        'url': AnyHttpUrl('https://www.strava.com/activities/1234567809'),
         'abstract': None,
         'associated_media': [],
         'interaction_count': 4,
         'keywords': [],
         'shared_content': [],
-        'status': 'public',
         'text': None,
-        'title': 'Bondcliff',
-        'activity_type': 'MountainBikeRide',
-        'distance': 23676.5,
-        'elevation_high': 182.5,
-        'elevation_low': 179.9,
+        'elevation_high': None,
+        'elevation_low': None,
         'kilocalories': None,
-        'max_speed': 8.8,
-        'start_datetime': datetime.datetime(2018, 4, 30, 12, 35, 51),
         'start_latitude': None,
         'start_longitude': None,
-        'end_datetime': datetime.datetime(2018, 4, 30, 14, 5, 51),
         'end_latitude': None,
         'end_longitude': None,
     }
+
+    assert model_obj_dumps == [
+        {
+            **base_model_dict,
+            'service_object_id': '154504250376823',
+            'creator_user_id': '134815',
+            'data_owner_id': '134815',
+            'created_at': datetime.datetime(2018, 5, 2, 12, 15, 9),
+            'url': AnyHttpUrl('https://www.strava.com/activities/154504250376823'),
+            'associated_media': [
+                {
+                    'audio_url': None,
+                    'image_url': AnyHttpUrl('https://url1.com/'),
+                    'video_url': None,
+                },
+                {
+                    'audio_url': None,
+                    'image_url': AnyHttpUrl('https://url2.com/'),
+                    'video_url': None,
+                },
+            ],
+            'status': 'restricted',
+            'text': 'mock description',
+            'title': 'Happy Friday',
+            'activity_type': 'Hike',
+            'distance': 24931.4,
+            'kilocalories': 870.2,
+            'max_speed': 11.0,
+            'start_datetime': datetime.datetime(2018, 5, 2, 12, 15, 9),
+            'start_latitude': 41.41,
+            'start_longitude': -41.41,
+            'end_datetime': datetime.datetime(2018, 5, 2, 13, 30, 9),
+            'end_latitude': 42.42,
+            'end_longitude': -42.42,
+        },
+        {
+            **base_model_dict,
+            'service_object_id': '1234567809',
+            'creator_user_id': '167560',
+            'data_owner_id': '167560',
+            'created_at': datetime.datetime(2018, 4, 30, 12, 35, 51),
+            'url': AnyHttpUrl('https://www.strava.com/activities/1234567809'),
+            'status': 'public',
+            'title': 'Bondcliff',
+            'activity_type': 'MountainBikeRide',
+            'distance': 23676.5,
+            'elevation_high': 182.5,
+            'elevation_low': 179.9,
+            'max_speed': 8.8,
+            'start_datetime': datetime.datetime(2018, 4, 30, 12, 35, 51),
+            'end_datetime': datetime.datetime(2018, 4, 30, 14, 5, 51),
+        },
+    ]
