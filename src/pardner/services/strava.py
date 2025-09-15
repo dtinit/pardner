@@ -73,7 +73,9 @@ class StravaTransferService(BaseTransferService):
             return datetime.strptime(raw_datetime, '%Y-%m-%dT%H:%M:%SZ')
         return None
 
-    def _parse_social_posting(self, raw_data: Any) -> SocialPostingVertical | None:
+    def parse_social_posting_vertical(
+        self, raw_data: Any
+    ) -> SocialPostingVertical | None:
         """
         Given the response from the API request, creates a
         :class:`SocialPostingVertical` model object, if possible.
@@ -114,8 +116,12 @@ class StravaTransferService(BaseTransferService):
                 for photo_url in photo_urls
             ]
 
+        athlete_id = str(raw_data_dict['athlete'].get('id'))
+
         return SocialPostingVertical(
-            creator_user_id=str(raw_data_dict['athlete'].get('id')),
+            creator_user_id=athlete_id,
+            data_owner_id=athlete_id,
+            service_object_id=raw_data_dict.get('id'),
             service=self._service_name,
             created_at=created_at,
             url=url_str,
@@ -150,7 +156,7 @@ class StravaTransferService(BaseTransferService):
                 'athlete/activities', params={'per_page': count, **request_params}
             ).json()
             return [
-                self._parse_social_posting(raw_social_posting)
+                self.parse_social_posting_vertical(raw_social_posting)
                 for raw_social_posting in raw_social_postings
             ], raw_social_postings
         raise UnsupportedRequestException(
@@ -158,7 +164,7 @@ class StravaTransferService(BaseTransferService):
             f'can only make a request for at most {max_count} posts at a time.',
         )
 
-    def _parse_physical_activity(
+    def parse_physical_activity_vertical(
         self, raw_data: Any
     ) -> PhysicalActivityVertical | None:
         """
@@ -170,7 +176,7 @@ class StravaTransferService(BaseTransferService):
         :returns: :class:`PhysicalActivityVertical` or ``None``, depending on whether it
         was possible to extract data from the response
         """
-        social_posting = self._parse_social_posting(raw_data)
+        social_posting = self.parse_social_posting_vertical(raw_data)
         if not social_posting:
             return None
 
@@ -233,7 +239,7 @@ class StravaTransferService(BaseTransferService):
                 'athlete/activities', params={'per_page': count, **request_params}
             ).json()
             return [
-                self._parse_physical_activity(raw_activity)
+                self.parse_physical_activity_vertical(raw_activity)
                 for raw_activity in raw_activities
             ], raw_activities
         raise UnsupportedRequestException(
