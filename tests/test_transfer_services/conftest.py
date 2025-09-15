@@ -68,7 +68,7 @@ def mock_strava_transfer_service(verticals=[PhysicalActivityVertical]):
 
 
 @pytest.fixture
-def mock_groupme_transfer_service(
+def groupme_transfer_service(
     verticals=[BlockedUserVertical, ConversationDirectVertical],
 ):
     groupme = GroupMeTransferService(

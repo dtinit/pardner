@@ -14,73 +14,70 @@ FAKE_LIST_RESPONSE = ['fake', 'list', 'response']
 TOKEN = 'fake_token'
 
 
-def test_fetch_token_raises_no_authorization_response(mock_groupme_transfer_service):
+def test_fetch_token_raises_no_authorization_response(groupme_transfer_service):
     with pytest.raises(ValueError):
-        mock_groupme_transfer_service.fetch_token(code='code')
+        groupme_transfer_service.fetch_token(code='code')
 
 
-def test_fetch_token_raises_no_access_token(mock_groupme_transfer_service):
+def test_fetch_token_raises_no_access_token(groupme_transfer_service):
     with pytest.raises(ValueError):
-        mock_groupme_transfer_service.fetch_token(
+        groupme_transfer_service.fetch_token(
             authorization_response='https://localhostfake?token=badtoken'
         )
 
 
-def test_fetch_token(mock_oauth2_session_request, mock_groupme_transfer_service):
+def test_fetch_token(mock_oauth2_session_request, groupme_transfer_service):
     token = 'faketoken123'
-    mock_groupme_transfer_service.fetch_token(
+    groupme_transfer_service.fetch_token(
         authorization_response=f'https://localhostfake?access_token={token}'
     )
     mock_oauth2_session_request.assert_not_called()
     assert (
-        mock_groupme_transfer_service._oAuth2Session.token.get('access_token', {})
-        == token
+        groupme_transfer_service._oAuth2Session.token.get('access_token', {}) == token
     )
 
 
-def test__fetch_resource_common_raises_exception(mock_groupme_transfer_service, mocker):
+def test__fetch_resource_common_raises_exception(groupme_transfer_service, mocker):
     response_object = mocker.MagicMock()
     response_object.status_code = 200
     response_object.json.return_value = {'response': {'id': USER_ID}}
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
 
-    mock_groupme_transfer_service._fetch_resource_common(
-        'https://api.groupme.com/v3/fake'
-    )
+    groupme_transfer_service._fetch_resource_common('https://api.groupme.com/v3/fake')
 
     assert oauth2_session_get.call_count == 2
-    assert mock_groupme_transfer_service._user_id == USER_ID
+    assert groupme_transfer_service._user_id == USER_ID
 
 
-def test_fetch_user_data_raises_no_token(mock_groupme_transfer_service):
-    mock_groupme_transfer_service._oAuth2Session.token = {}
+def test_fetch_user_data_raises_no_token(groupme_transfer_service):
+    groupme_transfer_service._oAuth2Session.token = {}
     with pytest.raises(UnsupportedRequestException):
-        mock_groupme_transfer_service.fetch_user_data()
+        groupme_transfer_service.fetch_user_data()
 
 
-def test_fetch_user_data(mocker, mock_groupme_transfer_service):
+def test_fetch_user_data(mocker, groupme_transfer_service):
     expected_respose = {'id': USER_ID}
     response_object = mocker.MagicMock()
     response_object.json.return_value = {'response': expected_respose}
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
 
-    assert mock_groupme_transfer_service.fetch_user_data() == expected_respose
-    assert mock_groupme_transfer_service._user_id == USER_ID
+    assert groupme_transfer_service.fetch_user_data() == expected_respose
+    assert groupme_transfer_service._user_id == USER_ID
     assert oauth2_session_get.call_args.args[1] == 'https://api.groupme.com/v3/users/me'
 
 
-def test_fetch_blocked_users_raises_exception(mock_groupme_transfer_service, mocker):
-    mock_groupme_transfer_service._user_id = USER_ID
+def test_fetch_blocked_users_raises_exception(groupme_transfer_service, mocker):
+    groupme_transfer_service._user_id = USER_ID
     response_object = mocker.MagicMock()
     response_object.status_code = 200
     response_object.json.return_value = {'response': {'no_blocks': []}}
     mock_oauth2_session_get(mocker, response_object)
     with pytest.raises(ValueError):
-        mock_groupme_transfer_service.fetch_blocked_user_vertical()
+        groupme_transfer_service.fetch_blocked_user_vertical()
 
 
-def test_fetch_blocked_user_vertical(mock_groupme_transfer_service, mocker):
-    mock_groupme_transfer_service._user_id = USER_ID
+def test_fetch_blocked_user_vertical(groupme_transfer_service, mocker):
+    groupme_transfer_service._user_id = USER_ID
     response_object = mocker.MagicMock()
     # adapted from
     # https://dev.groupme.com/docs/v3#blocks_index
@@ -97,7 +94,7 @@ def test_fetch_blocked_user_vertical(mock_groupme_transfer_service, mocker):
         }
     }
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
-    model_objs, _ = mock_groupme_transfer_service.fetch_blocked_user_vertical()
+    model_objs, _ = groupme_transfer_service.fetch_blocked_user_vertical()
     model_obj_dumps = dump_and_filter_model_objs(model_objs)
 
     assert oauth2_session_get.call_args.args[1] == 'https://api.groupme.com/v3/blocks'
@@ -126,8 +123,8 @@ def test_fetch_blocked_user_vertical(mock_groupme_transfer_service, mocker):
     ]
 
 
-def test_fetch_chat_bot_vertical(mock_groupme_transfer_service, mocker):
-    mock_groupme_transfer_service._user_id = USER_ID
+def test_fetch_chat_bot_vertical(groupme_transfer_service, mocker):
+    groupme_transfer_service._user_id = USER_ID
     response_object = mocker.MagicMock()
     # adapted from
     # https://dev.groupme.com/docs/v3#bots_index
@@ -151,7 +148,7 @@ def test_fetch_chat_bot_vertical(mock_groupme_transfer_service, mocker):
         ]
     }
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
-    model_objs, _ = mock_groupme_transfer_service.fetch_chat_bot_vertical()
+    model_objs, _ = groupme_transfer_service.fetch_chat_bot_vertical()
 
     assert oauth2_session_get.call_args.args[1] == 'https://api.groupme.com/v3/bots'
 
@@ -176,15 +173,13 @@ def test_fetch_chat_bot_vertical(mock_groupme_transfer_service, mocker):
     'method_name',
     ['fetch_conversation_direct_vertical', 'fetch_conversation_group_vertical'],
 )
-def test_fetch_conversations_raises_exception(
-    method_name, mock_groupme_transfer_service
-):
+def test_fetch_conversations_raises_exception(method_name, groupme_transfer_service):
     with pytest.raises(UnsupportedRequestException):
-        getattr(mock_groupme_transfer_service, method_name)(count=11)
+        getattr(groupme_transfer_service, method_name)(count=11)
 
 
-def test_fetch_conversation_direct_vertical(mock_groupme_transfer_service, mocker):
-    mock_groupme_transfer_service._user_id = USER_ID
+def test_fetch_conversation_direct_vertical(groupme_transfer_service, mocker):
+    groupme_transfer_service._user_id = USER_ID
     response_object = mocker.MagicMock()
     # adapted from
     # https://dev.groupme.com/docs/v3#chats_index
@@ -257,7 +252,7 @@ def test_fetch_conversation_direct_vertical(mock_groupme_transfer_service, mocke
         ]
     }
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
-    model_objs, _ = mock_groupme_transfer_service.fetch_conversation_direct_vertical()
+    model_objs, _ = groupme_transfer_service.fetch_conversation_direct_vertical()
 
     assert oauth2_session_get.call_args.args[1] == 'https://api.groupme.com/v3/chats'
 
@@ -294,8 +289,8 @@ def test_fetch_conversation_direct_vertical(mock_groupme_transfer_service, mocke
     ]
 
 
-def test_fetch_conversation_group_vertical(mock_groupme_transfer_service, mocker):
-    mock_groupme_transfer_service._user_id = USER_ID
+def test_fetch_conversation_group_vertical(groupme_transfer_service, mocker):
+    groupme_transfer_service._user_id = USER_ID
     response_object = mocker.MagicMock()
     # adapted from
     # https://dev.groupme.com/docs/v3#groups_index
@@ -417,7 +412,7 @@ def test_fetch_conversation_group_vertical(mock_groupme_transfer_service, mocker
         ]
     }
     oauth2_session_get = mock_oauth2_session_get(mocker, response_object)
-    model_objs, _ = mock_groupme_transfer_service.fetch_conversation_group_vertical()
+    model_objs, _ = groupme_transfer_service.fetch_conversation_group_vertical()
 
     assert oauth2_session_get.call_args.args[1] == 'https://api.groupme.com/v3/groups'
 
