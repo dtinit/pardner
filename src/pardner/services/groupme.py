@@ -198,7 +198,6 @@ class GroupMeTransferService(BaseTransferService):
             creator_user_id=user_id,
             data_owner_id=user_id,
             name=raw_data_dict.get('name'),
-            conversation_group_id=raw_data_dict.get('group_id'),
         )
 
     def fetch_chat_bot_vertical(

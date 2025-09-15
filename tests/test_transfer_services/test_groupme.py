@@ -164,16 +164,10 @@ def test_fetch_chat_bot_vertical(mock_groupme_transfer_service, mocker):
         'vertical_name': 'chat_bot',
         'created_at': None,
         'url': None,
-        'conversation_group_id': None,
     }
 
     assert model_obj_dumps == [
-        {
-            **base_model_dict,
-            'service_object_id': '1234567890',
-            'name': 'hal9000',
-            'conversation_group_id': '1234567890',
-        },
+        {**base_model_dict, 'service_object_id': '1234567890', 'name': 'hal9000'},
         {**base_model_dict, 'service_object_id': '123', 'name': 'hal9001'},
     ]
 
