@@ -29,7 +29,7 @@ def test_fetch_token(
     [
         'mock_tumblr_transfer_service',
         'mock_strava_transfer_service',
-        'mock_groupme_transfer_service',
+        'groupme_transfer_service',
     ],
 )
 def test_fetch_vertical_generic(

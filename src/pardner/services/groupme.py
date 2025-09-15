@@ -1,4 +1,5 @@
 import json
+from collections import defaultdict
 from typing import Any, Iterable, Optional, override
 from urllib.parse import parse_qs, urlparse
 
@@ -15,6 +16,7 @@ from pardner.verticals import (
     ConversationGroupVertical,
     Vertical,
 )
+from pardner.verticals.sub_verticals import AssociatedMediaSubVertical
 
 
 class GroupMeTransferService(BaseTransferService):
@@ -135,32 +137,116 @@ class GroupMeTransferService(BaseTransferService):
         self._user_id = user_data['id']
         return user_data
 
-    def fetch_blocked_user_vertical(self, request_params: dict[str, Any] = {}) -> Any:
+    def parse_blocked_user_vertical(self, raw_data: Any) -> BlockedUserVertical | None:
+        """
+        Given the response from the API request, creates a
+        :class:`BlockedUserVertical` model object, if possible.
+
+        :param raw_data: the JSON representation of the data returned by the request.
+
+        :returns: :class:`BlockedUserVertical` or ``None``, depending on whether it
+        was possible to extract data from the response
+        """
+        if not isinstance(raw_data, dict):
+            return None
+        raw_data_dict = defaultdict(dict, raw_data)
+        return BlockedUserVertical(
+            service=self._service_name,
+            creator_user_id=raw_data_dict.get('user_id'),
+            data_owner_id=raw_data_dict.get('user_id', self._user_id),
+            blocked_user_id=raw_data_dict.get('blocked_user_id'),
+            created_at=raw_data_dict.get('created_at'),
+        )
+
+    def fetch_blocked_user_vertical(
+        self, request_params: dict[str, Any] = {}
+    ) -> tuple[list[BlockedUserVertical | None], Any]:
         """
         Sends a GET request to fetch the users blocked by the authenticated user.
 
-        :returns: a JSON object with the result of the request.
+        :returns: two elements: the first, a list of :class:`BlockedUserVertical`s
+        or ``None``, if unable to parse; the second, the raw response from making the
+        request.
         """
         blocked_users = self._fetch_resource_common('blocks', request_params)
-
         if 'blocks' not in blocked_users:
             raise ValueError(
                 f'Unexpected response format: {json.dumps(blocked_users, indent=2)}'
             )
+        return [
+            self.parse_blocked_user_vertical(blocked_dict)
+            for blocked_dict in blocked_users['blocks']
+        ], blocked_users
 
-        return blocked_users['blocks']
+    def parse_chat_bot_vertical(self, raw_data: Any) -> ChatBotVertical | None:
+        """
+        Given the response from the API request, creates a
+        :class:`ChatBotVertical` model object, if possible.
 
-    def fetch_chat_bot_vertical(self, request_params: dict[str, Any] = {}) -> Any:
+        :param raw_data: the JSON representation of the data returned by the request.
+
+        :returns: :class:`ChatBotVertical` or ``None``, depending on whether it
+        was possible to extract data from the response
+        """
+        if not isinstance(raw_data, dict):
+            return None
+        raw_data_dict = defaultdict(dict, raw_data)
+        user_id = raw_data_dict.get('user_id', self._user_id)
+        return ChatBotVertical(
+            service=self._service_name,
+            service_object_id=raw_data_dict.get('bot_id'),
+            creator_user_id=user_id,
+            data_owner_id=user_id,
+            name=raw_data_dict.get('name'),
+        )
+
+    def fetch_chat_bot_vertical(
+        self, request_params: dict[str, Any] = {}
+    ) -> tuple[list[ChatBotVertical | None], Any]:
         """
         Sends a GET request to fetch the chat bots created by the authenticated user.
 
-        :returns: a JSON object with the result of the request.
+        :returns: two elements: the first, a list of :class:`ChatBotVertical`s
+        or ``None``, if unable to parse; the second, the raw response from making the
+        request.
         """
-        return self._fetch_resource_common('bots', request_params)
+        bots_response = self._fetch_resource_common('bots', request_params)
+        if not isinstance(bots_response, list):
+            raise ValueError(
+                f'Unexpected response format: {json.dumps(bots_response, indent=2)}'
+            )
+        return [
+            self.parse_chat_bot_vertical(chat_bot_data)
+            for chat_bot_data in bots_response
+        ], bots_response
+
+    def parse_conversation_direct_vertical(
+        self, raw_data: Any
+    ) -> ConversationDirectVertical | None:
+        """
+        Given the response from the API request, creates a
+        :class:`ConversationDirectVertical` model object, if possible.
+
+        :param raw_data: the JSON representation of the data returned by the request.
+
+        :returns: :class:`ConversationDirectVertical` or ``None``, depending on
+        whether it was possible to extract data from the response
+        """
+        if not isinstance(raw_data, dict):
+            return None
+        raw_data_dict = defaultdict(dict, raw_data)
+        return ConversationDirectVertical(
+            service=self._service_name,
+            service_object_id=raw_data_dict.get('id'),
+            data_owner_id=self._user_id,
+            member_user_ids=[self._user_id, raw_data_dict['other_user'].get('id')],
+            messages_count=raw_data_dict.get('messages_count'),
+            created_at=raw_data_dict.get('created_at'),
+        )
 
     def fetch_conversation_direct_vertical(
         self, request_params: dict[str, Any] = {}, count: int = 10
-    ) -> Any:
+    ) -> tuple[list[ConversationDirectVertical | None], Any]:
         """
         Sends a GET request to fetch the conversations the authenticated user is a part
         of with only one other member (i.e., a direct message). The response will
@@ -169,15 +255,72 @@ class GroupMeTransferService(BaseTransferService):
 
         :param count: the number of conversations to fetch. Defaults to 10.
 
-        :returns: a JSON object with the result of the request.
+        :returns: two elements: the first, a list of
+        :class:`ConversationDirectVertical`s or ``None``, if unable to parse; the
+        second, the raw response from making the request.
         """
-        if count <= 10:
-            return self._fetch_resource_common(
-                'chats', params={**request_params, 'per_page': count}
+        if count > 10:
+            raise UnsupportedRequestException(
+                self._service_name,
+                'can only make a request for at most 10 direct conversations at a time.',
             )
-        raise UnsupportedRequestException(
-            self._service_name,
-            'can only make a request for at most 10 direct conversations at a time.',
+        conversation_direct_raw_response = self._fetch_resource_common(
+            'chats', params={**request_params, 'per_page': count}
+        )
+        if not isinstance(conversation_direct_raw_response, list):
+            raise ValueError(
+                'Unexpected response format. Expected list, '
+                f'got: {json.dumps(conversation_direct_raw_response, indent=2)}'
+            )
+        return [
+            self.parse_conversation_direct_vertical(conversation_direct_data)
+            for conversation_direct_data in conversation_direct_raw_response
+        ], conversation_direct_raw_response
+
+    def parse_conversation_group_vertical(
+        self, raw_data: Any
+    ) -> ConversationGroupVertical | None:
+        """
+        Given the response from the API request, creates a
+        :class:`ConversationGroupVertical` model object, if possible.
+
+        :param raw_data: the JSON representation of the data returned by the request.
+
+        :returns: :class:`ConversationGroupVertical` or ``None``, depending on
+        whether it was possible to extract data from the response
+        """
+        if not isinstance(raw_data, dict):
+            return None
+        raw_data_dict = defaultdict(dict, raw_data)
+
+        members_list = raw_data_dict.get('members', [])
+        member_user_ids = []
+        for member in members_list:
+            if isinstance(member, dict) and 'user_id' in member:
+                member_user_ids.append(member['user_id'])
+
+        associated_media = []
+        image_url = raw_data_dict.get('image_url', None)
+        if image_url:
+            associated_media = [AssociatedMediaSubVertical(image_url=image_url)]
+
+        is_private = None
+        conversation_type = raw_data_dict.get('type')
+        if isinstance(conversation_type, str):
+            is_private = conversation_type == 'private'
+
+        return ConversationGroupVertical(
+            service=self._service_name,
+            service_object_id=raw_data_dict.get('id'),
+            data_owner_id=self._user_id,
+            creator_user_id=raw_data_dict.get('creator_user_id'),
+            title=raw_data_dict.get('name'),
+            member_user_ids=member_user_ids,
+            members_count=len(members_list),
+            messages_count=raw_data_dict['messages'].get('count'),
+            associated_media=associated_media,
+            created_at=raw_data_dict.get('created_at'),
+            is_private=is_private,
         )
 
     def fetch_conversation_group_vertical(
@@ -190,13 +333,24 @@ class GroupMeTransferService(BaseTransferService):
 
         :param count: the number of conversations to fetch. Defaults to 10.
 
-        :returns: a JSON object with the result of the request.
+        :returns: two elements: the first, a list of
+        :class:`ConversationGroupVertical`s or ``None``, if unable to parse; the
+        second, the raw response from making the request.
         """
-        if count <= 10:
-            return self._fetch_resource_common(
-                'groups', params={**request_params, 'per_page': count}
+        if count > 10:
+            raise UnsupportedRequestException(
+                self._service_name,
+                'can only make a request for at most 10 group conversations at a time.',
             )
-        raise UnsupportedRequestException(
-            self._service_name,
-            'can only make a request for at most 10 group conversations at a time.',
+        conversation_group_raw_response = self._fetch_resource_common(
+            'groups', params={**request_params, 'per_page': count}
         )
+        if not isinstance(conversation_group_raw_response, list):
+            raise ValueError(
+                'Unexpected response format. Expected list, '
+                f'got: {json.dumps(conversation_group_raw_response, indent=2)}'
+            )
+        return [
+            self.parse_conversation_group_vertical(conversation_group_data)
+            for conversation_group_data in conversation_group_raw_response
+        ], conversation_group_raw_response
