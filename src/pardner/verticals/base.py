@@ -3,7 +3,7 @@ from abc import ABC
 from datetime import datetime
 from typing import Type
 
-from pydantic import AnyHttpUrl, BaseModel, Field
+from pydantic import AnyHttpUrl, BaseModel, ConfigDict, Field
 
 
 class BaseVertical(BaseModel, ABC):
@@ -12,6 +12,8 @@ class BaseVertical(BaseModel, ABC):
     categories of data, that are supported by this library. Not all verticals are
     supported by every transfer service.
     """
+
+    model_config = ConfigDict(coerce_numbers_to_str=True)
 
     pardner_object_id: str = Field(
         default_factory=lambda: uuid.uuid4().hex,

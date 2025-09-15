@@ -174,10 +174,12 @@ def test_fetch_physical_activity_vertical(mocker, mock_strava_transfer_service):
     )
 
     model_obj1_json = model_obj1.model_dump()
-    del model_obj1_json['id']
+    del model_obj1_json['pardner_object_id']
 
     assert model_obj1_json == {
+        'service_object_id': '154504250376823',
         'creator_user_id': '134815',
+        'data_owner_id': '134815',
         'service': 'Strava',
         'vertical_name': 'physical_activity',
         'created_at': datetime.datetime(2018, 5, 2, 12, 15, 9),
@@ -216,10 +218,12 @@ def test_fetch_physical_activity_vertical(mocker, mock_strava_transfer_service):
     }
 
     model_obj2_json = model_obj2.model_dump()
-    del model_obj2_json['id']
+    del model_obj2_json['pardner_object_id']
 
     assert model_obj2_json == {
+        'service_object_id': '1234567809',
         'creator_user_id': '167560',
+        'data_owner_id': '167560',
         'service': 'Strava',
         'vertical_name': 'physical_activity',
         'created_at': datetime.datetime(2018, 4, 30, 12, 35, 51),
