@@ -204,16 +204,8 @@ def test_fetch_physical_activity_vertical(mocker, strava_transfer_service):
             'created_at': datetime.datetime(2018, 5, 2, 12, 15, 9),
             'url': AnyHttpUrl('https://www.strava.com/activities/154504250376823'),
             'associated_media': [
-                {
-                    'audio_url': None,
-                    'image_url': AnyHttpUrl('https://url1.com/'),
-                    'video_url': None,
-                },
-                {
-                    'audio_url': None,
-                    'image_url': AnyHttpUrl('https://url2.com/'),
-                    'video_url': None,
-                },
+                {'media_type': 'image', 'url': AnyHttpUrl('https://url1.com/')},
+                {'media_type': 'image', 'url': AnyHttpUrl('https://url2.com/')},
             ],
             'status': 'restricted',
             'text': 'mock description',
