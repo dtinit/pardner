@@ -8,4 +8,6 @@ class ConversationDirectVertical(ConversationVertical):
     """
 
     vertical_name: str = 'conversation_direct'
+
     is_group_conversation: bool = False
+    members_count: int = 2
