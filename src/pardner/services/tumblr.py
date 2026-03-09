@@ -121,14 +121,12 @@ class TumblrTransferService(BaseTransferService):
         made.
         """
         if count <= 20:
+            params: dict[str, Any] = {'limit': count, 'npf': True, **request_params}
+            if text_only:
+                params['type'] = 'text'
             dashboard_response = self._get_resource_from_path(
                 'user/dashboard',
-                {
-                    'limit': count,
-                    'npf': True,
-                    'type': 'text' if text_only else '',
-                    **request_params,
-                },
+                params,
             )
             return list(dashboard_response.json().get('response').get('posts'))
         raise UnsupportedRequestException(
