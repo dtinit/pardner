@@ -1,3 +1,5 @@
+from typing import Any
+
 from pardner.verticals import Vertical
 
 
@@ -26,3 +28,23 @@ class UnsupportedVerticalException(Exception):
 class UnsupportedRequestException(Exception):
     def __init__(self, service_name: str, message: str):
         super().__init__(f'Cannot fetch data from {service_name}: {message}')
+
+
+class TumblrAPIError(Exception):
+    """
+    Raised when the Tumblr API returns a non-OK HTTP status or a success response
+    whose payload is missing expected structure
+    """
+
+    def __init__(
+        self,
+        message: str,
+        status_code: int | None = None,
+        raw_response: Any = None,
+    ) -> None:
+        detail = f'Tumblr API error: {message}'
+        if status_code is not None:
+            detail += f' (HTTP {status_code})'
+        super().__init__(detail)
+        self.status_code = status_code
+        self.raw_response = raw_response
